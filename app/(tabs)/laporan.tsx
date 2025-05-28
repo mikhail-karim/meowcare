@@ -45,11 +45,14 @@ export default function LaporanScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Nama Pelapor</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Nama Lengkap"
-              value={formData.location}
-              onChangeText={(text) => setFormData({ ...formData, location: text })}
+              style={[styles.input, styles.textArea]}
+              placeholder="Masukkan Nama"
+              value={formData.description}
+              onChangeText={(text) => setFormData({ ...formData, description: text })}
               placeholderTextColor="#94A3B8"
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
             />
           </View>
 
@@ -57,11 +60,14 @@ export default function LaporanScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Nomor Telepon</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, styles.textArea]}
               placeholder="Masukkan Nomor Telepon"
-              value={formData.location}
-              onChangeText={(text) => setFormData({ ...formData, location: text })}
+              value={formData.description}
+              onChangeText={(text) => setFormData({ ...formData, description: text })}
               placeholderTextColor="#94A3B8"
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
             />
           </View>
 
@@ -69,11 +75,14 @@ export default function LaporanScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Email</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, styles.textArea]}
               placeholder="Masukkan Email"
-              value={formData.location}
-              onChangeText={(text) => setFormData({ ...formData, location: text })}
+              value={formData.description}
+              onChangeText={(text) => setFormData({ ...formData, description: text })}
               placeholderTextColor="#94A3B8"
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
             />
           </View>
 
