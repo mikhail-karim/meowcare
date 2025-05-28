@@ -30,5 +30,17 @@ $router->group(['prefix' => 'users'], function () use ($router) {
         $router->put('/change-role', 'UserController@changeRole');
         $router->delete('/', 'UserController@delete');
     });
+});
+    
+$router->group(['prefix' => 'admins'], function () use ($router) {
+    $router->get('/', 'AdminController@getAll');
+    $router->get('/id/{id}', 'AdminController@getById');
+    $router->post('/register', 'AdminController@register');
+    $router->post('/login', 'AdminController@login');
 
+    $router->group(['middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
+        $router->post('/logout', 'AdminController@logout');
+        $router->put('/edit', 'AdminController@edit');
+        $router->delete('/', 'AdminController@delete');
+    });
 });
