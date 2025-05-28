@@ -16,6 +16,9 @@ import { typography } from '../theme'
 export default function LaporanScreen() {
   const router = useRouter()
   const [formData, setFormData] = useState({
+    name:'',
+    nomortelepon:'',
+    email:'',
     location: '',
     description: '',
     image: null as string | null,
@@ -45,14 +48,11 @@ export default function LaporanScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Nama Pelapor</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Masukkan Nama"
-              value={formData.description}
-              onChangeText={(text) => setFormData({ ...formData, description: text })}
+              style={styles.input}
+              placeholder="Nama Lengkap"
+              value={formData.name}
+              onChangeText={(text) => setFormData({ ...formData, name: text })}
               placeholderTextColor="#94A3B8"
-              multiline
-              numberOfLines={6}
-              textAlignVertical="top"
             />
           </View>
 
@@ -60,14 +60,11 @@ export default function LaporanScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Nomor Telepon</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={styles.input}
               placeholder="Masukkan Nomor Telepon"
-              value={formData.description}
-              onChangeText={(text) => setFormData({ ...formData, description: text })}
+              value={formData.nomortelepon}
+              onChangeText={(text) => setFormData({ ...formData, nomortelepon: text })}
               placeholderTextColor="#94A3B8"
-              multiline
-              numberOfLines={6}
-              textAlignVertical="top"
             />
           </View>
 
@@ -75,14 +72,11 @@ export default function LaporanScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Email</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={styles.input}
               placeholder="Masukkan Email"
-              value={formData.description}
-              onChangeText={(text) => setFormData({ ...formData, description: text })}
+              value={formData.email}
+              onChangeText={(text) => setFormData({ ...formData, email: text })}
               placeholderTextColor="#94A3B8"
-              multiline
-              numberOfLines={6}
-              textAlignVertical="top"
             />
           </View>
 
