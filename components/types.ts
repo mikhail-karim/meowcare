@@ -7,4 +7,14 @@ export interface Pet {
   gender: string;
   age: string;
   image: string | ImageSourcePropType;
-} 
+};
+
+export type Article = {
+  id: number;
+  title: string;
+  category: string;
+  author: string;
+  image: any;
+};
+
+
