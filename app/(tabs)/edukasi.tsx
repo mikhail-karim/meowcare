@@ -42,6 +42,9 @@ export default function EdukasiScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {/* Header */}
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={24} color="#333" />
+        </TouchableOpacity>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Edukasi</Text>
         </View>
@@ -121,6 +124,18 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 12,
     backgroundColor: "#fff",
+  },
+  backButton: {
+    position: "absolute",
+    left: 20,
+    top: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#F1F5F9",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2,
   },
   headerTitle: {
     ...typography.header.medium,
