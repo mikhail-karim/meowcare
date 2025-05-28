@@ -39,8 +39,44 @@ export default function LaporanScreen() {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.formContainer}>
-          <Text style={styles.formTitle}>Informasi Kucing</Text>
+          <Text style={styles.formTitle}>Ketemu kucing? Ayo laporin di sini!</Text>
           
+        {/* Name Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Nama Pelapor</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nama Lengkap"
+              value={formData.location}
+              onChangeText={(text) => setFormData({ ...formData, location: text })}
+              placeholderTextColor="#94A3B8"
+            />
+          </View>
+
+        {/* Number Phone Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Nomor Telepon</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Masukkan Nomor Telepon"
+              value={formData.location}
+              onChangeText={(text) => setFormData({ ...formData, location: text })}
+              placeholderTextColor="#94A3B8"
+            />
+          </View>
+
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Masukkan Email"
+              value={formData.location}
+              onChangeText={(text) => setFormData({ ...formData, location: text })}
+              placeholderTextColor="#94A3B8"
+            />
+          </View>
+
           {/* Location Input */}
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Lokasi</Text>
@@ -190,7 +226,7 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: "center",
     marginTop: 8,
-    marginBottom: 32,
+    marginBottom: 32, 
   },
   submitButtonText: {
     ...typography.body.medium.semiBold,
