@@ -1,6 +1,7 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { typography } from './theme';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -12,9 +13,9 @@ export default function SignUpScreen() {
   const handleSignUp = () => {
     if (username && email && password) {
       console.log('Signing up with:', username, email, password);
-      router.push('/home'); // Sesuaikan rute
+      router.push('/home');
     } else {
-      alert('Please fill in all fields');
+      Alert.alert('Error', 'Mohon isi semua field');
     }
   };
 
@@ -27,7 +28,7 @@ export default function SignUpScreen() {
         <TextInput
           value={username}
           onChangeText={setUsername}
-          placeholder="Your Username"
+          placeholder="Masukkan username Anda"
           placeholderTextColor="#A9A9A9"
           style={styles.input}
         />
@@ -38,7 +39,7 @@ export default function SignUpScreen() {
         <TextInput
           value={email}
           onChangeText={setEmail}
-          placeholder="Your Email"
+          placeholder="Masukkan email Anda"
           placeholderTextColor="#A9A9A9"
           style={styles.input}
           keyboardType="email-address"
@@ -51,7 +52,7 @@ export default function SignUpScreen() {
         <TextInput
           value={password}
           onChangeText={setPassword}
-          placeholder="Your Password"
+          placeholder="Masukkan password Anda"
           placeholderTextColor="#A9A9A9"
           style={styles.input}
           secureTextEntry
@@ -60,7 +61,14 @@ export default function SignUpScreen() {
 
       <View style={styles.buttonWrapper}>
         <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-          <Text style={styles.buttonText}>Sign Up</Text>
+          <Text style={styles.buttonText}>Daftar</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Sudah punya akun? </Text>
+        <TouchableOpacity onPress={() => router.push('/signin')}>
+          <Text style={styles.footerLink}>Sign In</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -75,42 +83,54 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: '600',
-    marginBottom: 32,
+    ...typography.header.large,
     color: '#1E1E1E',
+    marginBottom: 32,
   },
   inputContainer: {
     marginBottom: 20,
   },
   label: {
-    marginBottom: 6,
-    fontSize: 14,
+    ...typography.body.medium.semiBold,
     color: '#1E1E1E',
+    marginBottom: 6,
   },
   input: {
     borderWidth: 1,
     borderColor: '#B0C4DE',
-    borderRadius: 20,
+    borderRadius: 32,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    fontSize: 14,
     color: '#000',
+    ...typography.body.medium.regular,
   },
   buttonWrapper: {
     alignItems: 'flex-end',
+    marginBottom: 24,
   },
   button: {
-    backgroundColor: '#1E2A38',
+    backgroundColor: '#213448',
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 25,
+    borderRadius: 32,
     alignItems: 'center',
     width: 150,
   },
   buttonText: {
+    ...typography.body.medium.semiBold,
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
-});
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerText: {
+    ...typography.body.medium.regular,
+    color: '#666',
+  },
+  footerLink: {
+    ...typography.body.medium.semiBold,
+    color: '#213448',
+  },
+}); 

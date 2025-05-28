@@ -1,45 +1,57 @@
-// import { Tabs } from 'expo-router';
-// import React from 'react';
-// import { Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'
+import { Tabs } from 'expo-router'
 
-// import { HapticTab } from '@/components/HapticTab';
-// import { IconSymbol } from '@/components/ui/IconSymbol';
-// import TabBarBackground from '@/components/ui/TabBarBackground';
-// import { Colors } from '@/constants/Colors';
-// import { useColorScheme } from '@/hooks/useColorScheme';
-
-// export default function TabLayout() {
-//   const colorScheme = useColorScheme();
-
-//   return (
-//     <Tabs
-//       screenOptions={{
-//         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-//         headerShown: false,
-//         tabBarButton: HapticTab,
-//         tabBarBackground: TabBarBackground,
-//         tabBarStyle: Platform.select({
-//           ios: {
-//             // Use a transparent background on iOS to show the blur effect
-//             position: 'absolute',
-//           },
-//           default: {},
-//         }),
-//       }}>
-//       <Tabs.Screen
-//         name="index"
-//         options={{
-//           title: 'Home',
-//           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-//         }}
-//       />
-//       <Tabs.Screen
-//         name="explore"
-//         options={{
-//           title: 'Explore',
-//           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-//         }}
-//       />
-//     </Tabs>
-//   );
-// }
+export default function TabLayout() {
+  return (
+    <Tabs screenOptions={{
+      headerShown: false,
+      tabBarStyle: {
+        backgroundColor: '#fff',
+        borderTopWidth: 1,
+        borderTopColor: '#E2E8F0',
+        height: 60,
+        paddingBottom: 8,
+        paddingTop: 8,
+      },
+      tabBarActiveTintColor: '#222E3A',
+      tabBarInactiveTintColor: '#94A3B8',
+    }}>
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="laporan"
+        options={{
+          title: 'Laporan',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="document-text-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="adoption-list"
+        options={{
+          title: 'Adopsi',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="paw-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="edukasi"
+        options={{
+          title: 'Edukasi',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="book-outline" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
+  )
+} 

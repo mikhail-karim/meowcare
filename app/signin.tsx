@@ -1,6 +1,7 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { typography } from './theme';
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function SignInScreen() {
       console.log('Logging in with:', email, password);
       router.push('/home'); 
     } else {
-      alert('Please enter both email and password');
+      Alert.alert('Error', 'Mohon masukkan email dan password');
     }
   };
 
@@ -27,7 +28,7 @@ export default function SignInScreen() {
         <TextInput
           value={email}
           onChangeText={setEmail}
-          placeholder="Your Email"
+          placeholder="Masukkan email Anda"
           placeholderTextColor="#A9A9A9"
           style={styles.input}
           keyboardType="email-address"
@@ -40,22 +41,28 @@ export default function SignInScreen() {
         <TextInput
           value={password}
           onChangeText={setPassword}
-          placeholder="Your Password"
+          placeholder="Masukkan password Anda"
           placeholderTextColor="#A9A9A9"
           style={styles.input}
           secureTextEntry
         />
-        <TouchableOpacity>
-          <Text style={styles.forgot}>Forgot Password?</Text>
+        <TouchableOpacity onPress={() => router.push('/forgot-password')}>
+          <Text style={styles.forgot}>Lupa Password?</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.buttonWrapper}>
         <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-          <Text style={styles.buttonText}>Sign In</Text>
+          <Text style={styles.buttonText}>Masuk</Text>
         </TouchableOpacity>
       </View>
 
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Belum punya akun? </Text>
+        <TouchableOpacity onPress={() => router.push('/signup')}>
+          <Text style={styles.footerLink}>Sign Up</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -68,48 +75,60 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: '600',
-    marginBottom: 32,
+    ...typography.header.large,
     color: '#1E1E1E',
+    marginBottom: 32,
   },
   inputContainer: {
     marginBottom: 20,
   },
   label: {
-    marginBottom: 6,
-    fontSize: 14,
+    ...typography.body.medium.semiBold,
     color: '#1E1E1E',
+    marginBottom: 6,
   },
   input: {
     borderWidth: 1,
     borderColor: '#B0C4DE',
-    borderRadius: 20,
+    borderRadius: 32,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    fontSize: 14,
     color: '#000',
+    ...typography.body.medium.regular,
   },
   forgot: {
     marginTop: 6,
-    fontSize: 12,
+    ...typography.body.small.regular,
     color: '#555',
     alignSelf: 'flex-end',
   },
   buttonWrapper: {
-  alignItems: 'flex-end',
+    alignItems: 'flex-end',
+    marginBottom: 24,
   },
   button: {
-    backgroundColor: '#1E2A38',
+    backgroundColor: '#213448',
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 25,
+    borderRadius: 32,
     alignItems: 'center',
     width: 150, 
   },
   buttonText: {
+    ...typography.body.medium.semiBold,
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
-});
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  footerText: {
+    ...typography.body.medium.regular,
+    color: '#666',
+  },
+  footerLink: {
+    ...typography.body.medium.semiBold,
+    color: '#213448',
+  },
+}); 
