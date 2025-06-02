@@ -44,3 +44,49 @@ $router->group(['prefix' => 'admins'], function () use ($router) {
         $router->delete('/', 'AdminController@delete');
     });
 });
+
+$router->group(['prefix' => 'penyakit'], function () use ($router) {
+    $router->get('/', 'PenyakitController@index');
+    $router->get('/{id}', 'PenyakitController@show');
+    $router->post('/', 'PenyakitController@store');
+    $router->put('/{id}', 'PenyakitController@update');
+    $router->delete('/{id}', 'PenyakitController@destroy');
+});
+
+$router->get('/seed-penyakit', function () {
+    require_once database_path('seeders/PenyakitSeeder.php');
+    $seeder = new \Database\Seeders\PenyakitSeeder();
+    $seeder->run();
+    return response()->json(['status' => 'Seeder berhasil dijalankan!']);
+});
+
+$router->group(['prefix' => 'ras'], function () use ($router) {
+    $router->get('/', 'RasController@index');
+    $router->get('/{id}', 'RasController@show');
+    $router->post('/', 'RasController@store');
+    $router->put('/{id}', 'RasController@update');
+    $router->delete('/{id}', 'RasController@destroy');
+});
+
+$router->get('/seed-ras', function () {
+    require_once database_path('seeders/RasSeeder.php');
+    $seeder = new \Database\Seeders\RasSeeder();
+    $seeder->run();
+    return response()->json(['status' => 'Seeder Ras berhasil dijalankan!']);
+});
+
+
+$router->group(['prefix' => 'warna'], function () use ($router) {
+$router->get('/', 'WarnaController@index');
+$router->get('/{id}', 'WarnaController@show');
+$router->post('/', 'WarnaController@store');
+$router->put('/{id}', 'WarnaController@update');
+$router->delete('/{id}', 'WarnaController@destroy');
+});
+
+$router->get('/seed-warna', function () {
+    require_once database_path('seeders/WarnaSeeder.php');
+    $seeder = new \Database\Seeders\WarnaSeeder();
+    $seeder->run();
+    return response()->json(['status' => 'Seeder Warna berhasil dijalankan!']);
+});
