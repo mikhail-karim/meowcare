@@ -9,7 +9,7 @@ class CreateWarnaTable extends Migration
     public function up()
     {
         Schema::create('warna', function (Blueprint $table) {
-            $table->increments('Warna_ID');
+            $table->id('Warna_ID');
             $table->string('Nama');
             $table->string('Kode_Warna')->nullable();
             $table->timestamps();

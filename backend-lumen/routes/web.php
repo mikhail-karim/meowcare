@@ -17,6 +17,7 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+// Users
 $router->group(['prefix' => 'users'], function () use ($router) {
     $router->get('/', 'UserController@getAll');
     $router->get('/id/{id}', 'UserController@getById');
@@ -32,6 +33,8 @@ $router->group(['prefix' => 'users'], function () use ($router) {
     });
 });
     
+
+// Admins
 $router->group(['prefix' => 'admins'], function () use ($router) {
     $router->get('/', 'AdminController@getAll');
     $router->get('/id/{id}', 'AdminController@getById');
@@ -45,6 +48,7 @@ $router->group(['prefix' => 'admins'], function () use ($router) {
     });
 });
 
+// Penyakit
 $router->group(['prefix' => 'penyakit'], function () use ($router) {
     $router->get('/', 'PenyakitController@index');
     $router->get('/{id}', 'PenyakitController@show');
@@ -60,6 +64,7 @@ $router->get('/seed-penyakit', function () {
     return response()->json(['status' => 'Seeder berhasil dijalankan!']);
 });
 
+// Ras
 $router->group(['prefix' => 'ras'], function () use ($router) {
     $router->get('/', 'RasController@index');
     $router->get('/{id}', 'RasController@show');
@@ -75,7 +80,7 @@ $router->get('/seed-ras', function () {
     return response()->json(['status' => 'Seeder Ras berhasil dijalankan!']);
 });
 
-
+// Warna
 $router->group(['prefix' => 'warna'], function () use ($router) {
 $router->get('/', 'WarnaController@index');
 $router->get('/{id}', 'WarnaController@show');
@@ -89,4 +94,17 @@ $router->get('/seed-warna', function () {
     $seeder = new \Database\Seeders\WarnaSeeder();
     $seeder->run();
     return response()->json(['status' => 'Seeder Warna berhasil dijalankan!']);
+});
+
+// Pets
+$router->group(['prefix' => 'pets'], function () use ($router) {
+    $router->get('/', 'PetController@index');               
+    $router->get('/{id}', 'PetController@show');         
+
+    $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
+        $router->post('/', 'PetController@store');                  
+        $router->put('/{id}', 'PetController@update');         
+        $router->put('/status/{field}/{id}', 'PetController@updateStatus');
+        $router->delete('/{id}', 'PetController@destroy');          
+    });
 });
