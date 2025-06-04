@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { typography } from './theme';
+import { colors, container, spacing, typography } from './theme';
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
@@ -58,47 +58,46 @@ export default function ResetPasswordScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 24,
+    ...container.screen,
+    padding: spacing.lg,
     justifyContent: 'center',
   },
   title: {
     ...typography.header.large,
-    color: '#213448',
-    marginBottom: 32,
+    color: colors.primary,
+    marginBottom: spacing.xl,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: spacing.lg,
   },
   label: {
     ...typography.body.medium.semiBold,
-    color: '#1E1E1E',
-    marginBottom: 6,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#B0C4DE',
+    borderColor: colors.secondary,
     borderRadius: 32,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: '#000',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    color: colors.text.primary,
     ...typography.body.medium.regular,
   },
   buttonWrapper: {
     alignItems: 'flex-end',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   button: {
-    backgroundColor: '#213448',
-    paddingVertical: 14,
-    paddingHorizontal: 32,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl,
     borderRadius: 32,
     alignItems: 'center',
     width: 150,
   },
   buttonText: {
     ...typography.body.medium.semiBold,
-    color: '#fff',
+    color: colors.background,
   },
 }); 

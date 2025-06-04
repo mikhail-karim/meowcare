@@ -1,12 +1,15 @@
-import { ImageSourcePropType } from 'react-native';
 
-export interface Pet {
+export type Pet = {
   id: number;
   name: string;
   location: string;
   gender: string;
   age: string;
-  image: string | ImageSourcePropType;
+  image: any;
+  vaccinated: boolean;
+  sterilized: boolean;
+  breed: string;
+  color: string;
 };
 
 export type Article = {

@@ -4,8 +4,8 @@
     "slug": "meowcare-frontend",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "meowcarefrontend",
+    "icon": "",
+    "scheme": "MeowCare",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/meowcare_logo.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true

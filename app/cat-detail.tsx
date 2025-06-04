@@ -255,6 +255,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: 'row',
     padding: 20,
+    paddingBottom: 60,
     gap: 16,
     backgroundColor: '#fff',
     borderTopWidth: 1,

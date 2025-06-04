@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { typography } from './theme';
+import { colors, container, spacing, typography } from './theme';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -77,48 +77,47 @@ export default function SignUpScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 24,
+    ...container.screen,
+    padding: spacing.lg,
     justifyContent: 'center',
   },
   title: {
     ...typography.header.large,
-    color: '#1E1E1E',
-    marginBottom: 32,
+    color: colors.text.primary,
+    marginBottom: spacing.xl,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: spacing.lg,
   },
   label: {
     ...typography.body.medium.semiBold,
-    color: '#1E1E1E',
-    marginBottom: 6,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#B0C4DE',
+    borderColor: colors.secondary,
     borderRadius: 32,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: '#000',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    color: colors.text.primary,
     ...typography.body.medium.regular,
   },
   buttonWrapper: {
     alignItems: 'flex-end',
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   button: {
-    backgroundColor: '#213448',
-    paddingVertical: 14,
-    paddingHorizontal: 32,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl,
     borderRadius: 32,
     alignItems: 'center',
     width: 150,
   },
   buttonText: {
     ...typography.body.medium.semiBold,
-    color: '#fff',
+    color: colors.background,
   },
   footer: {
     flexDirection: 'row',
@@ -127,10 +126,10 @@ const styles = StyleSheet.create({
   },
   footerText: {
     ...typography.body.medium.regular,
-    color: '#666',
+    color: colors.text.secondary,
   },
   footerLink: {
     ...typography.body.medium.semiBold,
-    color: '#213448',
+    color: colors.primary,
   },
 }); 

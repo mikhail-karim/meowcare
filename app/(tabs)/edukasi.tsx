@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { typography } from "../theme";
-import { ArticleCard } from "../../components/ArticleCard";  
-import { Article } from "../../components/types"; 
+import { ArticleCard } from "../../components/ArticleCard";
+import { Article } from "../../components/types";
+import { container, spacing, typography } from "../theme";
 
 export default function EdukasiScreen() {
   const router = useRouter();
@@ -69,17 +69,10 @@ export default function EdukasiScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#fff",
+    ...container.screen,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
-    position: "relative",
+    ...container.header,
     backgroundColor: "#fff",
   },
   backButton: {
@@ -103,22 +96,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bannerCard: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 20,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    padding: spacing.lg,
     backgroundColor: "#E2E8F0",
     borderRadius: 16,
   },
   bannerTitle: {
     ...typography.body.large.semiBold,
     color: "#1E293B",
-    marginBottom: 10,
+    marginBottom: spacing.sm,
   },
   bannerButton: {
     alignSelf: "flex-start",
     backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 20,
   },
   bannerButtonText: {
@@ -127,15 +120,15 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: "row",
-    paddingHorizontal: 20,
-    marginBottom: 10,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
   },
   tabButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: 20,
     backgroundColor: "#F1F5F9",
-    marginRight: 10,
+    marginRight: spacing.sm,
   },
   tabButtonActive: {
     backgroundColor: "#fff",
@@ -150,7 +143,7 @@ const styles = StyleSheet.create({
     color: "#1E293B",
   },
   articleList: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
 });
