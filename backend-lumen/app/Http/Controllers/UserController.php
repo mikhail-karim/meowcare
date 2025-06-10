@@ -51,7 +51,8 @@ class UserController extends Controller
             $file = $request->file('Foto_Profil');
             $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
             $folder = 'profile';
-            $path = public_path("images/{$folder}");
+            
+            $path = app()->basePath('public/images/' . $folder);
 
             if (!file_exists($path)) {
                 mkdir($path, 0755, true);
@@ -127,7 +128,7 @@ class UserController extends Controller
         if ($request->hasFile('Foto_Profil')) {
             $file = $request->file('Foto_Profil');
             $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = public_path('images/profile');
+            $path = app()->basePath('public/images/profile');
 
             if (!file_exists($path)) {
                 mkdir($path, 0755, true);

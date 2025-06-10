@@ -21,6 +21,7 @@ class Pet extends Model
         'Ras_ID', 
         'Warna_ID', 
         'User_ID', 
+        'Admin_ID', 
     ];
 
     public function ras()
@@ -36,5 +37,9 @@ class Pet extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'User_ID');
+    }
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'Admin_ID');
     }
 }

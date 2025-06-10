@@ -19,12 +19,15 @@ class CreatePetsTable extends Migration
             $table->boolean('Sterilisasi')->default(false);
             $table->unsignedBigInteger('Ras_ID');
             $table->unsignedBigInteger('Warna_ID');
-            $table->unsignedBigInteger('User_ID');
+            $table->unsignedBigInteger('User_ID')->nullable();
+            $table->unsignedBigInteger('Admin_ID')->nullable();
+
             $table->timestamps();
 
             $table->foreign('Ras_ID')->references('Ras_ID')->on('ras')->onDelete('cascade');
             $table->foreign('Warna_ID')->references('Warna_ID')->on('warna')->onDelete('cascade');
             $table->foreign('User_ID')->references('User_ID')->on('users')->onDelete('cascade');
+            $table->foreign('Admin_ID')->references('Admin_ID')->on('admins')->onDelete('cascade');
         });
     }
 

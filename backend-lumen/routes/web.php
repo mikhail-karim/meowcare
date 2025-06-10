@@ -101,13 +101,23 @@ $router->group(['prefix' => 'pets'], function () use ($router) {
     $router->get('/', 'PetController@index');               
     $router->get('/{id}', 'PetController@show');         
 
+    // User routes
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
         $router->post('/', 'PetController@store');                  
         $router->put('/{id}', 'PetController@update');         
         $router->put('/status/{field}/{id}', 'PetController@updateStatus');
         $router->delete('/{id}', 'PetController@destroy');          
     });
+
+    // Admin routes
+    $router->group(['middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
+        $router->post('/as-admin', 'PetController@storeAsAdmin'); 
+        $router->put('/{id}', 'PetController@update');         
+        $router->put('/status/{field}/{id}', 'PetController@updateStatus');
+        $router->delete('/{id}', 'PetController@destroy');          
+    });
 });
+
 
 //Pengajuan
 $router->group(['prefix' => 'pengajuan'], function () use ($router) {
