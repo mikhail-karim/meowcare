@@ -108,3 +108,22 @@ $router->group(['prefix' => 'pets'], function () use ($router) {
         $router->delete('/{id}', 'PetController@destroy');          
     });
 });
+
+//Pengajuan
+$router->group(['prefix' => 'pengajuan'], function () use ($router) {
+    $router->get('/', 'PengajuanController@index');
+    $router->get('/{id}', 'PengajuanController@show');
+    $router->delete('/{id}', 'PengajuanController@destroy');
+    
+    $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
+        $router->post('/', 'PengajuanController@store');
+        $router->put('/{id}', 'PengajuanController@update');
+    });
+});
+
+//Konfirmasi
+$router->group(['prefix' => 'konfirmasi', 'middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
+    $router->get('/', 'KonfirmasiController@index');
+    $router->post('/', 'KonfirmasiController@store');
+    $router->delete('/{id}', 'KonfirmasiController@destroy');
+});
