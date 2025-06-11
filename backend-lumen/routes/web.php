@@ -137,3 +137,31 @@ $router->group(['prefix' => 'konfirmasi', 'middleware' => ['jwt.auth', 'role:adm
     $router->post('/', 'KonfirmasiController@store');
     $router->delete('/{id}', 'KonfirmasiController@destroy');
 });
+
+// Artikel
+$router->group(['prefix' => 'artikel'], function () use ($router) {
+    // Routes yang hanya bisa diakses oleh user yang sudah login dengan role:user
+    $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
+        $router->get('/', 'ArtikelController@index');          
+        $router->get('/{id}', 'ArtikelController@show');       
+        $router->put('/view/{id}', 'ArtikelController@view');  
+        $router->put('/likes/{id}', 'ArtikelController@likes');
+    });
+
+    // Routes admin (dengan middleware jwt.auth dan role:admin)
+    $router->group(['middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
+        $router->post('/', 'ArtikelController@storeAsAdmin'); 
+        $router->put('/{id}', 'ArtikelController@update');           
+        $router->delete('/{id}', 'ArtikelController@destroy');       
+    });
+});
+
+//Comments
+$router->group(['prefix' => 'comments', 'middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
+    $router->get('/', 'CommentsController@index');
+    $router->get('/{id}', 'CommentsController@show');
+    $router->get('artikel/{artikel_ID}', 'CommentsController@getByArtikelId');
+    $router->post('/', 'CommentsController@store');
+    $router->put('/{id}', 'CommentsController@update');
+    $router->delete('/{id}', 'CommentsController@destroy');
+});
