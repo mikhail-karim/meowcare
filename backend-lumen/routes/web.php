@@ -118,6 +118,21 @@ $router->group(['prefix' => 'pets'], function () use ($router) {
     });
 });
 
+//Riwayat Penyakit
+$router->group(['prefix' => 'riwayat_penyakit'], function () use ($router) {
+
+    $router->get('/', 'RiwayatPenyakitController@index');
+    $router->get('/{id}', 'RiwayatPenyakitController@show');
+    $router->get('/pet/{pet_id}', 'RiwayatPenyakitController@getByPetId');
+
+    // Protected routes with jwt.auth middleware and role check
+    $router->group(['middleware' => ['jwt.auth', 'role:user,admin']], function () use ($router) {
+        $router->post('/', 'RiwayatPenyakitController@store');
+        $router->put('/{id}', 'RiwayatPenyakitController@update'); // update status only
+        $router->delete('/{id}', 'RiwayatPenyakitController@destroy');
+    });
+});
+
 
 //Pengajuan
 $router->group(['prefix' => 'pengajuan'], function () use ($router) {
