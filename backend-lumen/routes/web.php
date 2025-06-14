@@ -2,16 +2,6 @@
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
-/*
-|--------------------------------------------------------------------------
-| Application Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It is a breeze. Simply tell Lumen the URIs it should respond to
-| and give it the Closure to call when that URI is requested.
-|
-*/
 
 $router->get('/', function () use ($router) {
     return $router->app->version();
@@ -22,12 +12,12 @@ $router->group(['prefix' => 'users'], function () use ($router) {
     $router->get('/', 'UserController@getAll');
     $router->get('/id/{id}', 'UserController@getById');
     $router->get('/role/{role}', 'UserController@getByRole');
-    $router->post('/register', 'UserController@register');
-    $router->post('/login', 'UserController@login');
+    $router->post('/register', 'UserController@register'); //Nama_Lengkap, Username, Email, Password, Foto_Profil
+    $router->post('/login', 'UserController@login'); //Email, Password
 
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
         $router->post('/logout', 'UserController@logout');
-        $router->put('/edit', 'UserController@edit');
+        $router->put('/edit', 'UserController@edit'); //Nama_Lengkap, Username, Email, Nomor_HP, Alamat, Password, Foto_Profil
         $router->put('/change-role', 'UserController@changeRole');
         $router->delete('/', 'UserController@delete');
     });
@@ -38,12 +28,12 @@ $router->group(['prefix' => 'users'], function () use ($router) {
 $router->group(['prefix' => 'admins'], function () use ($router) {
     $router->get('/', 'AdminController@getAll');
     $router->get('/id/{id}', 'AdminController@getById');
-    $router->post('/register', 'AdminController@register');
-    $router->post('/login', 'AdminController@login');
+    $router->post('/register', 'AdminController@register'); //Nama_Lengkap, Username, Email, Password
+    $router->post('/login', 'AdminController@login'); //Email, Password
 
     $router->group(['middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
         $router->post('/logout', 'AdminController@logout');
-        $router->put('/edit', 'AdminController@edit');
+        $router->put('/edit', 'AdminController@edit'); //Nama_Lengkap, Username, Email, Nomor_HP, Alamat, Password
         $router->delete('/', 'AdminController@delete');
     });
 });
@@ -52,7 +42,7 @@ $router->group(['prefix' => 'admins'], function () use ($router) {
 $router->group(['prefix' => 'penyakit'], function () use ($router) {
     $router->get('/', 'PenyakitController@index');
     $router->get('/{id}', 'PenyakitController@show');
-    $router->post('/', 'PenyakitController@store');
+    $router->post('/', 'PenyakitController@store'); //Nama, Gejala, Penyebab, Obat
     $router->put('/{id}', 'PenyakitController@update');
     $router->delete('/{id}', 'PenyakitController@destroy');
 });
@@ -68,7 +58,7 @@ $router->get('/seed-penyakit', function () {
 $router->group(['prefix' => 'ras'], function () use ($router) {
     $router->get('/', 'RasController@index');
     $router->get('/{id}', 'RasController@show');
-    $router->post('/', 'RasController@store');
+    $router->post('/', 'RasController@store'); //Nama, Asal, Ciri_Khas
     $router->put('/{id}', 'RasController@update');
     $router->delete('/{id}', 'RasController@destroy');
 });
@@ -84,7 +74,7 @@ $router->get('/seed-ras', function () {
 $router->group(['prefix' => 'warna'], function () use ($router) {
 $router->get('/', 'WarnaController@index');
 $router->get('/{id}', 'WarnaController@show');
-$router->post('/', 'WarnaController@store');
+$router->post('/', 'WarnaController@store');//Nama, Kode_warna
 $router->put('/{id}', 'WarnaController@update');
 $router->delete('/{id}', 'WarnaController@destroy');
 });
@@ -103,17 +93,17 @@ $router->group(['prefix' => 'pets'], function () use ($router) {
 
     // User routes
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
-        $router->post('/', 'PetController@store');                  
-        $router->put('/{id}', 'PetController@update');         
-        $router->put('/status/{field}/{id}', 'PetController@updateStatus');
+        $router->post('/', 'PetController@store'); //Nama, Foto, Umur, Jenis_Kelamin, Ras_ID, Warna_ID              
+        $router->put('/{id}', 'PetController@update');//Nama, Foto, Umur, Jenis_Kelamin, Ras_ID, Warna_ID     
+        $router->put('/status/{field}/{id}', 'PetController@updateStatus'); //Field = Adopted, Divaksin, Sterilisasi
         $router->delete('/{id}', 'PetController@destroy');          
     });
 
     // Admin routes
     $router->group(['middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
-        $router->post('/as-admin', 'PetController@storeAsAdmin'); 
-        $router->put('/{id}', 'PetController@update');         
-        $router->put('/status/{field}/{id}', 'PetController@updateStatus');
+        $router->post('/as-admin', 'PetController@storeAsAdmin'); //Nama, Foto, Umur, Jenis_Kelamin, Ras_ID, Warna_ID 
+        $router->put('/{id}', 'PetController@update'); //Nama, Foto, Umur, Jenis_Kelamin, Ras_ID, Warna_ID 
+        $router->put('/status/{field}/{id}', 'PetController@updateStatus'); //Field = Adopted, Divaksin, Sterilisasi
         $router->delete('/{id}', 'PetController@destroy');          
     });
 });
@@ -125,10 +115,9 @@ $router->group(['prefix' => 'riwayat_penyakit'], function () use ($router) {
     $router->get('/{id}', 'RiwayatPenyakitController@show');
     $router->get('/pet/{pet_id}', 'RiwayatPenyakitController@getByPetId');
 
-    // Protected routes with jwt.auth middleware and role check
     $router->group(['middleware' => ['jwt.auth', 'role:user,admin']], function () use ($router) {
-        $router->post('/', 'RiwayatPenyakitController@store');
-        $router->put('/{id}', 'RiwayatPenyakitController@update'); // update status only
+        $router->post('/', 'RiwayatPenyakitController@store'); //Penyakit_ID, Pet_ID, Status
+        $router->put('/{id}', 'RiwayatPenyakitController@update'); //Status
         $router->delete('/{id}', 'RiwayatPenyakitController@destroy');
     });
 });
@@ -141,21 +130,20 @@ $router->group(['prefix' => 'pengajuan'], function () use ($router) {
     $router->delete('/{id}', 'PengajuanController@destroy');
     
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
-        $router->post('/', 'PengajuanController@store');
-        $router->put('/{id}', 'PengajuanController@update');
+        $router->post('/', 'PengajuanController@store'); //Alasan, Pet_ID
+        $router->put('/{id}', 'PengajuanController@update'); //Alasan, Pet_ID, Approved, User_ID
     });
 });
 
 //Konfirmasi
 $router->group(['prefix' => 'konfirmasi', 'middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
     $router->get('/', 'KonfirmasiController@index');
-    $router->post('/', 'KonfirmasiController@store');
+    $router->post('/', 'KonfirmasiController@store'); //Pengajuan_ID
     $router->delete('/{id}', 'KonfirmasiController@destroy');
 });
 
 // Artikel
 $router->group(['prefix' => 'artikel'], function () use ($router) {
-    // Routes yang hanya bisa diakses oleh user yang sudah login dengan role:user
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
         $router->get('/', 'ArtikelController@index');          
         $router->get('/{id}', 'ArtikelController@show');       
@@ -163,10 +151,9 @@ $router->group(['prefix' => 'artikel'], function () use ($router) {
         $router->put('/likes/{id}', 'ArtikelController@likes');
     });
 
-    // Routes admin (dengan middleware jwt.auth dan role:admin)
     $router->group(['middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
-        $router->post('/', 'ArtikelController@storeAsAdmin'); 
-        $router->put('/{id}', 'ArtikelController@update');           
+        $router->post('/', 'ArtikelController@storeAsAdmin'); //Judul, Thumbnail, Artikel, Kategori
+        $router->put('/{id}', 'ArtikelController@update'); //Judul, Thumbnail, Artikel, Kategori          
         $router->delete('/{id}', 'ArtikelController@destroy');       
     });
 });
@@ -176,7 +163,38 @@ $router->group(['prefix' => 'comments', 'middleware' => ['jwt.auth', 'role:user'
     $router->get('/', 'CommentsController@index');
     $router->get('/{id}', 'CommentsController@show');
     $router->get('artikel/{artikel_ID}', 'CommentsController@getByArtikelId');
-    $router->post('/', 'CommentsController@store');
-    $router->put('/{id}', 'CommentsController@update');
+    $router->post('/', 'CommentsController@store'); //Artikel_ID, Comments
+    $router->put('/{id}', 'CommentsController@update'); //Comments
     $router->delete('/{id}', 'CommentsController@destroy');
+});
+
+//Donation
+$router->group(['prefix' => 'donation'], function () use ($router) {
+    $router->get('/', 'DonationController@index');
+    $router->get('/{id}', 'DonationController@show');
+
+    $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
+        $router->post('/', 'DonationController@store'); //Nominal, Catatan
+        $router->put('/{id}', 'DonationController@update'); //Nominal, Catatan
+        $router->delete('/{id}', 'DonationController@destroy');
+    });
+});
+
+//Report
+$router->group(['prefix' => 'report'], function () use ($router) {
+    $router->get('/', 'ReportController@index');
+    $router->get('/rescued', 'ReportController@getRescued');
+    $router->get('/notrescued', 'ReportController@getNotRescued');
+
+    $router->group(['middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
+        $router->put('/rescued/{reportId}', 'ReportController@updateRescuedStatus');
+    });
+    
+    $router->get('/{id}', 'ReportController@show');
+    $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
+        $router->post('/', 'ReportController@store'); //Deskripsi, Foto
+        $router->put('/{id}', 'ReportController@update'); //Deskripsi, Foto
+        $router->delete('/{id}', 'ReportController@destroy');
+    });
+    
 });
