@@ -6,13 +6,14 @@ import { colors, container, spacing, typography } from './theme';
 export default function SignUpScreen() {
   const router = useRouter();
 
+  const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSignUp = () => {
-    if (username && email && password) {
-      console.log('Signing up with:', username, email, password);
+    if (fullName && username && email && password) {
+      console.log('Signing up with:', fullName, username, email, password);
       router.push('/home');
     } else {
       Alert.alert('Error', 'Mohon isi semua field');
@@ -22,6 +23,17 @@ export default function SignUpScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Nama Lengkap</Text>
+        <TextInput
+          value={fullName}
+          onChangeText={setFullName}
+          placeholder="Masukkan nama lengkap Anda"
+          placeholderTextColor="#A9A9A9"
+          style={styles.input}
+        />
+      </View>
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Username</Text>
