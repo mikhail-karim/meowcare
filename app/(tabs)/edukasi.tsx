@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -14,20 +15,29 @@ import { container, spacing, typography } from "../theme";
 
 export default function EdukasiScreen() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState("View all");
+
+  const tabs = ["View all", "Edukasi", "Kegiatan"];
 
   const articles: Article[] = Array(4).fill({
     title: "Judul Artikel",
-    category: "Kategori",
-    author: "Penulis",
+    category: "Kegiatan",
+    author: "KPTKS",
     image: require("../../assets/images/cats/oyen.png"),
   });
+
+  // Opsional: filter artikel berdasarkan kategori aktif
+  const filteredArticles =
+    activeTab === "View all"
+      ? articles
+      : articles.filter((a) => a.category === activeTab);
 
   const renderArticleCard = (article: Article, index: number) => (
     <ArticleCard
       key={index}
-      article={article} 
+      article={article}
       onPress={() => {
-        
+        router.push("/artikel-detail");
       }}
     />
   );
@@ -36,7 +46,10 @@ export default function EdukasiScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
           <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edukasi</Text>
@@ -46,22 +59,42 @@ export default function EdukasiScreen() {
         {/* Banner Edukasi */}
         <View style={styles.bannerCard}>
           <Text style={styles.bannerTitle}>Pahami pentingnya steriliasi</Text>
-          <TouchableOpacity style={styles.bannerButton}>
+          <TouchableOpacity
+            style={styles.bannerButton}
+            onPress={() => router.push("/artikel-detail")}
+          >
             <Text style={styles.bannerButtonText}>Pelajari</Text>
           </TouchableOpacity>
         </View>
 
         {/* Tab Filter */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
-          {['View all', 'Kesehatan', 'Perawatan', 'Gizi'].map((tab, i) => (
-            <TouchableOpacity key={i} style={[styles.tabButton, i === 0 && styles.tabButtonActive]}>
-              <Text style={[styles.tabText, i === 0 && styles.tabTextActive]}>{tab}</Text>
-            </TouchableOpacity>
-          ))}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabContainer}
+        >
+          {tabs.map((tab, i) => {
+            const isActive = tab === activeTab;
+            return (
+              <TouchableOpacity
+                key={i}
+                style={[styles.tabButton, isActive && styles.tabButtonActive]}
+                onPress={() => setActiveTab(tab)}
+              >
+                <Text
+                  style={[styles.tabText, isActive && styles.tabTextActive]}
+                >
+                  {tab}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
 
         {/* Article List */}
-        <View style={styles.articleList}>{articles.map(renderArticleCard)}</View>
+        <View style={styles.articleList}>
+          {filteredArticles.map(renderArticleCard)}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -132,7 +165,7 @@ const styles = StyleSheet.create({
   },
   tabButtonActive: {
     backgroundColor: "#fff",
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: "#CBD5E1",
   },
   tabText: {
@@ -141,6 +174,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: "#1E293B",
+    fontWeight: "600",
   },
   articleList: {
     paddingHorizontal: spacing.lg,

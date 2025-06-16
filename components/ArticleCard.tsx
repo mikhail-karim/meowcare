@@ -1,7 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { typography } from '../app/theme';
-import { Ionicons } from '@expo/vector-icons';
 import { Article } from './types'; // Buat interface Article di file ini atau terpisah
 
 interface ArticleCardProps {
@@ -27,11 +27,11 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article, onPress }) =>
       <View style={styles.info}>
         <Text style={styles.name}>{article.title}</Text>
         <View style={styles.row}>
-          <Ionicons name="pricetag-outline" size={16} color="#888" />
+          <Ionicons name="pricetag-outline" size={14} color="#888" />
           <Text style={styles.text}>{article.category}</Text>
         </View>
         <View style={styles.row}>
-          <Ionicons name="person-outline" size={16} color="#888" />
+          <Ionicons name="person-outline" size={14} color="#888" />
           <Text style={styles.text}>{article.author}</Text>
         </View>
       </View>
