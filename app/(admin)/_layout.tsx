@@ -26,7 +26,7 @@ export default function TabLayout() {
       },
     }}>
       <Tabs.Screen
-        name="home"
+        name="dashboard-admin"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => (

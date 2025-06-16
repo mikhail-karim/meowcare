@@ -2,15 +2,15 @@ import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icon
 import { useRouter } from "expo-router"
 import { useEffect, useState } from "react"
 import {
-  ImageBackground,
-  Modal,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ImageBackground,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native"
 import { PetCard } from '../../components/PetCard'
 import { Pet } from '../../components/types'
@@ -598,6 +598,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.secondary,
     paddingHorizontal: spacing.md,
+    height: 48
   },
   searchInput: {
     flex: 1,
