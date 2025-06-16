@@ -488,9 +488,9 @@ export default function AdoptionListScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        {/* <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#333" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <Text style={styles.headerTitle}>Dashboard</Text>
       </View>
 
@@ -537,6 +537,13 @@ export default function AdoptionListScreen() {
       </ScrollView>
 
       {renderFilterModal()}
+      
+        <TouchableOpacity 
+            style={styles.addButton}
+            onPress={() => router.push('/(tabs)/laporan')}
+        >
+            <Ionicons name="add" size={24} color="white" />
+        </TouchableOpacity>
     </SafeAreaView>
   )
 }
@@ -644,6 +651,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     justifyContent: "center",
     alignItems: "center",
+  },
+  addButton: {
+    position: "absolute",
+    bottom: 24,
+    right: 24,
+    backgroundColor: colors.primary,
+    padding: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
   catList: {
     paddingHorizontal: spacing.lg,

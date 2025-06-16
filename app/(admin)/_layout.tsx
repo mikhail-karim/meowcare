@@ -35,7 +35,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="laporan"
+        name="Report"
         options={{
           title: 'Laporan',
           tabBarIcon: ({ color }) => (
@@ -46,16 +46,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="adoption-list"
         options={{
-          title: 'Adopsi',
+          title: 'Adopt',
           tabBarIcon: ({ color }) => (
             <Ionicons name="paw-outline" size={28} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="edukasi"
+        name="article-admin"
         options={{
-          title: 'Edukasi',
+          title: 'Artikel',
           tabBarIcon: ({ color }) => (
             <Ionicons name="book-outline" size={28} color={color} />
           ),
