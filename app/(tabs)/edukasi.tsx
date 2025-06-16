@@ -1,12 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { ArticleCard } from "../../components/ArticleCard";
 import { Article } from "../../components/types";
@@ -46,7 +46,7 @@ export default function EdukasiScreen() {
         {/* Banner Edukasi */}
         <View style={styles.bannerCard}>
           <Text style={styles.bannerTitle}>Pahami pentingnya steriliasi</Text>
-          <TouchableOpacity style={styles.bannerButton}>
+          <TouchableOpacity style={styles.bannerButton} onPress={() => router.push('/(admin)/dashboard-admin')}>
             <Text style={styles.bannerButtonText}>Pelajari</Text>
           </TouchableOpacity>
         </View>
