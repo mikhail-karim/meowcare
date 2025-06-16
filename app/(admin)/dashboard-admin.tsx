@@ -2,7 +2,7 @@ import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icon
 import { useRouter } from "expo-router"
 import { useEffect, useState } from "react"
 import {
-    ImageBackground,
+    Image,
     Modal,
     SafeAreaView,
     ScrollView,
@@ -488,23 +488,29 @@ export default function AdoptionListScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        {/* <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Adopsi</Text>
+        </TouchableOpacity> */}
+        <Text style={styles.headerTitle}>Dashboard</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Banner */}
-        <ImageBackground
-          source={require('../../assets/images/Banner.png')}
-          style={styles.banner}
-          imageStyle={styles.bannerImage}
-        >
-          <View style={styles.bannerOverlay}>
-            <Text style={styles.bannerText}>Cari & Temukan teman berbulumu di sini</Text>
-          </View>
-        </ImageBackground>
+        {/* Placeholder Admin Profile */}
+        <View>
+            <View style={[styles.view, styles.bg]}>
+                <View style={styles.box}>
+                    <Image style={styles.pfp} resizeMode="cover" source={require('../../assets/images/adminplaceholder.png')}/>
+                    <View>
+                        <Text style={styles.name}>Satria</Text>
+                        <Text style={styles.aboutAdmin}>
+                            MeowCare Admin{"\n"}
+                            satria@gmail.com
+                        </Text>
+                    </View>
+                </View>
+            </View>
+        </View>
+        {/* ========================= */}
 
         {/* Search and Filter */}
         <View style={styles.searchContainer}>
@@ -531,6 +537,13 @@ export default function AdoptionListScreen() {
       </ScrollView>
 
       {renderFilterModal()}
+      
+        <TouchableOpacity 
+            style={styles.addButton}
+            onPress={() => router.push('/(tabs)/laporan')}
+        >
+            <Ionicons name="add" size={24} color="white" />
+        </TouchableOpacity>
     </SafeAreaView>
   )
 }
@@ -562,25 +575,50 @@ const styles = StyleSheet.create({
   content: {
     ...container.content,
   },
-  banner: {
-    height: 90,
+  bg: {
+    backgroundColor: "#fff",
+    flex: 1
+  },
+  box: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16 
+  },
+  view: {
+    // width: "87%",
+    shadowColor: "rgba(0, 0, 0, 0.05)",
+    shadowOffset: {
+        width: 0,
+        height: 1
+    },
+    shadowRadius: 2,
+    elevation: 2,
+    shadowOpacity: 1,    
     marginHorizontal: spacing.lg,
     borderRadius: 16,
     overflow: "hidden",
     marginBottom: spacing.md,
+    borderStyle: "solid",
+    borderColor: "#94b4c1",
+    borderWidth: 1,
   },
-  bannerImage: {
-    borderRadius: 16,
+  pfp: {
+    width: 100,
+    height: 100,
+    marginRight: 16,
+    borderRadius: 50,
   },
-  bannerOverlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    padding: spacing.md,
+  name: {
+    fontSize: 14,
+    fontWeight: "500",
+    fontFamily: "Poppins-Medium",
+    color: "#313131",
   },
-  bannerText: {
-    ...typography.body.large.semiBold,
-    color: colors.background,
-    lineHeight: 28,
+  aboutAdmin: {
+    fontSize: 12,
+    fontFamily: "Poppins-Regular",
+    color: "#c2c3cc",
+    marginTop: 4,
   },
   searchContainer: {
     flexDirection: "row",
@@ -613,6 +651,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     justifyContent: "center",
     alignItems: "center",
+  },
+  addButton: {
+    position: "absolute",
+    bottom: 24,
+    right: 24,
+    backgroundColor: colors.primary,
+    padding: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
   catList: {
     paddingHorizontal: spacing.lg,
