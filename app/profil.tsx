@@ -1,5 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
+
 import React, { useState } from "react";
 import {
   Image,
@@ -43,90 +47,113 @@ const REPORT_TEXT_COLORS: { [key: string]: string } = {
   selesai: "#15803D",
 };
 
+
 export default function ProfilScreen() {
+  const API_BASE_URL = 'http://192.168.0.108:8000';
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("Kucingku");
-
+  
+  const [profile, setProfile] = useState({
+    username: '',
+    foto: '',
+    role: '',
+  });
   const tabs = ["Kucingku", "Adopsi", "Laporan"];
 
-  const petData = [
-    {
-      name: "Wili",
-      location: "Wonokromo, Surabaya",
-      gender: "Laki-laki",
-      age: "1 Tahun",
-      image: require("../assets/images/cats/oyen.png"),
-      status: "available",
-    },
-    {
-      name: "Wili",
-      location: "Wonokromo, Surabaya",
-      gender: "Laki-laki",
-      age: "1 Tahun",
-      image: require("../assets/images/cats/oyen.png"),
-      status: "adopted",
-    },
-    {
-      name: "Wili",
-      location: "Wonokromo, Surabaya",
-      gender: "Laki-laki",
-      age: "1 Tahun",
-      image: require("../assets/images/cats/oyen.png"),
-      status: "approved",
-    },
-    {
-      name: "Wili",
-      location: "Wonokromo, Surabaya",
-      gender: "Laki-laki",
-      age: "1 Tahun",
-      image: require("../assets/images/cats/oyen.png"),
-      status: "pending",
-    },
-    {
-      name: "Wili",
-      location: "Wonokromo, Surabaya",
-      gender: "Laki-laki",
-      age: "1 Tahun",
-      image: require("../assets/images/cats/oyen.png"),
-      status: "rejected",
-    },
-  ];
+  const [petData, setPetData] = useState<any[]>([]);
+  const [reportData, setReportData] = useState<any[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userAddress, setUserAddress] = useState<string>("");
 
-  const reportData = [
-    {
-      date: "29 Maret 2020",
-      location: "Wonokromo, Surabaya",
-      image: require("../assets/images/cats/oyen.png"),
-      status: "diproses",
-    },
-    {
-      date: "29 Maret 2020",
-      location: "Wonokromo, Surabaya",
-      image: require("../assets/images/cats/oyen.png"),
-      status: "ditolak",
-    },
-    {
-      date: "29 Maret 2020",
-      location: "Wonokromo, Surabaya",
-      image: require("../assets/images/cats/oyen.png"),
-      status: "menunggu ditinjau",
-    },
-    {
-      date: "29 Maret 2020",
-      location: "Wonokromo, Surabaya",
-      image: require("../assets/images/cats/oyen.png"),
-      status: "selesai",
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      const id = await AsyncStorage.getItem("id");
+      const address = await AsyncStorage.getItem("alamat");
+      if (!id) return;
+      setUserId(id);
+      setUserAddress(address || "");
+
+      try {
+        // Kucingku
+        const petRes = await axios.get(`${API_BASE_URL}/pets/user/${id}`);
+        const formattedPet = petRes.data.data.map((pet: any) => ({
+          name: pet.Nama,
+          image: { uri: `${API_BASE_URL}/${pet.Foto}` },
+          gender: pet.Jenis_Kelamin,
+          age: `${pet.Umur} bulan`,
+          location: address,
+          status: pet.Adopted === 0 ? "available" : "adopted",
+        }));
+
+        // Adopsi
+        const adoptionRes = await axios.get(`${API_BASE_URL}/pengajuan/user/${id}`);
+        const formattedAdoption = adoptionRes.data.data.map((item: any) => ({
+          name: item.Pet.Nama,
+          image: { uri: `${API_BASE_URL}/${item.Pet.Foto}` },
+          gender: item.Pet.Jenis_Kelamin,
+          age: `${item.Pet.Umur} bulan`,
+          location: address,
+          status: item.Approved === 0 ? "pending" : "approved",
+        }));
+
+        // Gabungkan hasil
+        setPetData([...formattedPet, ...formattedAdoption]);
+
+        // Laporan
+        const reportRes = await axios.get(`${API_BASE_URL}/report/user/${id}`);
+
+        const formattedReport = reportRes.data.data.map((report: any) => {
+          const date = new Date(report.created_at).toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+
+          return {
+            date, // Contoh hasil: "18 Juni 2025"
+            image: { uri: `${API_BASE_URL}/${report.Foto}` },
+            location: address,
+            status: report.Rescued === 0 ? "diproses" : "selesai",
+          };
+        });
+
+        setReportData(formattedReport);
+      } catch (err) {
+        console.error("Gagal mengambil data:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+  const loadProfile = async () => {
+    try {
+      const username = await AsyncStorage.getItem("username");
+      const foto = await AsyncStorage.getItem("foto");
+      const role = await AsyncStorage.getItem("role");
+
+      setProfile({
+        username: username || '',
+        foto: foto ? `${API_BASE_URL}/${foto}` : '', // gunakan URI jika ada
+        role: role || '',
+      });
+    } catch (error) {
+      console.error("Gagal memuat data profil dari localStorage:", error);
+    }
+  };
+
+  loadProfile();
+}, []);
 
   const filteredPets = petData.filter((pet) => {
     if (activeTab === "Kucingku") {
       return ["available", "adopted"].includes(pet.status);
     }
     if (activeTab === "Adopsi") {
-      return ["approved", "pending", "rejected"].includes(pet.status);
+      return ["approved", "pending"].includes(pet.status);
     }
-    return true;
+    return false;
   });
 
   return (
@@ -139,19 +166,24 @@ export default function ProfilScreen() {
       </View>
 
       <ScrollView style={styles.content}>
-        <View style={styles.profileCard}>
-          <Image
-            source={require("../assets/images/mini-avatar.png")}
-            style={styles.profileImage}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.profileName}>Satria</Text>
-            <Text style={styles.profileRole}>MeowCare Member</Text>
-          </View>
-          <TouchableOpacity onPress={() => router.push("/ubah-profil")}>
-            <Ionicons name="create-outline" size={24} color="#1E293B" />
-          </TouchableOpacity>
+      <View style={styles.profileCard}>
+        <Image
+          source={
+            profile.foto
+              ? { uri: profile.foto }
+              : require("../assets/images/mini-avatar.png")
+          }
+          style={styles.profileImage}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.profileName}>{profile.username || "Pengguna"}</Text>
+          <Text style={styles.profileRole}>{profile.role || "MeowCare Member"}</Text>
         </View>
+        <TouchableOpacity onPress={() => router.push("/ubah-profil")}>
+          <Ionicons name="create-outline" size={24} color="#1E293B" />
+        </TouchableOpacity>
+      </View>
+
 
         <View style={styles.tabs}>
           {tabs.map((tab) => {
@@ -171,13 +203,20 @@ export default function ProfilScreen() {
         </View>
 
         <View style={styles.petList}>
-          {activeTab !== "Laporan"
-            ? filteredPets.map((pet, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.petCard}
-                  onPress={() => router.push("/view-cat")}
-                >
+            {activeTab !== "Laporan"
+              ? filteredPets.map((pet, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.petCard}
+                    onPress={async () => {
+                      try {
+                        await AsyncStorage.setItem("selectedPet", JSON.stringify(pet));
+                        router.push("/view-cat");
+                      } catch (error) {
+                        console.error("Gagal menyimpan data pet:", error);
+                      }
+                    }}
+                  >
                   <Image source={pet.image} style={styles.petImage} />
                   <View style={styles.petInfo}>
                     <View style={styles.petHeader}>
@@ -236,10 +275,10 @@ export default function ProfilScreen() {
                             },
                           ]}
                         >
-                          {report.status
-                            .split(" ")
-                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                            .join(" ")}
+                        {report.status
+                          .split(" ")
+                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                          .join(" ")}
                         </Text>
                       </View>
                     </View>

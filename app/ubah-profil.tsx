@@ -12,7 +12,7 @@ import * as ImagePicker from "expo-image-picker";
 export default function EditProfilScreen() {
   const router = useRouter();
 
-  const API_BASE_URL = 'http://192.168.94.249:8000';
+  const API_BASE_URL = 'http://192.168.0.108:8000';
 
   const [name, setName] = useState("Satria");
   const [username, setUsername] = useState("");

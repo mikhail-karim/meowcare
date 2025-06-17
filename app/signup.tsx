@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors, container, spacing, typography } from './theme';
 
-const API_BASE_URL = 'http://192.168.94.249:8000'; // Global base URL yang sama seperti di SignInScreen
+const API_BASE_URL = 'http://192.168.0.108:8000';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -34,6 +34,9 @@ export default function SignUpScreen() {
       await AsyncStorage.setItem('nama_lengkap', data.user.Nama_Lengkap);
       await AsyncStorage.setItem('username', data.user.Username);
       await AsyncStorage.setItem('id', data.user.User_ID);
+      await AsyncStorage.setItem('alamat', data.user.Alamat);
+      await AsyncStorage.setItem('foto', data.user.Foto_Profil);
+      await AsyncStorage.setItem('role', data.user.Role);
       
       if (data.token) {
         await AsyncStorage.setItem('token', data.token);

@@ -177,4 +177,17 @@ class ReportController extends Controller
         $reports = Report::where('Rescued', false)->get();
         return response()->json($reports, 200);
     }
+
+    // GET /reports/user/{userId}
+    public function getByUserId($userId)
+    {
+        $reports = Report::where('User_ID', $userId)
+            ->with('user') // Include relasi user
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $reports
+        ]);
+    }
 }

@@ -1,4 +1,6 @@
 import { Ionicons } from "@expo/vector-icons"
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import axios from 'axios'
 import * as ImagePicker from 'expo-image-picker'
 import * as Location from 'expo-location'
 import { useFocusEffect, useNavigation, useRouter } from "expo-router"
@@ -19,18 +21,14 @@ import {
 import { container, spacing, typography } from '../theme'
 
 export default function LaporanScreen() {
+  const API_BASE_URL = 'http://192.168.0.108:8000';
   const router = useRouter()
   const navigation = useNavigation()
   const initialFormState = {
-    name:'',
-    nomortelepon:'',
-    email:'',
-    location: '',
     description: '',
     image: null as string | null,
   }
   const [formData, setFormData] = useState(initialFormState)
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const fadeAnim = useRef(new Animated.Value(0)).current
@@ -77,42 +75,6 @@ export default function LaporanScreen() {
     })()
   }, [])
 
-  const getCurrentLocation = async () => {
-    try {
-      setIsLoadingLocation(true)
-      const { status } = await Location.requestForegroundPermissionsAsync()
-      
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission Denied',
-          'Please allow location access to use this feature.'
-        )
-        return
-      }
-
-      const location = await Location.getCurrentPositionAsync({})
-      const { latitude, longitude } = location.coords
-
-      // Get address from coordinates
-      const [address] = await Location.reverseGeocodeAsync({
-        latitude,
-        longitude
-      })
-
-      if (address) {
-        const locationString = `${address.street}, ${address.city}, ${address.region}`
-        setFormData({ ...formData, location: locationString })
-      }
-    } catch (error) {
-      Alert.alert(
-        'Error',
-        'Could not get your location. Please try again or enter manually.'
-      )
-    } finally {
-      setIsLoadingLocation(false)
-    }
-  }
-
   const pickImage = async () => {
     // Request permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -135,56 +97,50 @@ export default function LaporanScreen() {
     }
   }
 
-  const takePhoto = async () => {
-    // Request permission
-    const { status } = await ImagePicker.requestCameraPermissionsAsync()
-    
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Sorry, we need camera permissions to make this work!')
+  const handleSubmit = async () => {
+    if (!formData.description) {
+      Alert.alert('Peringatan', 'Mohon isi deskripsi terlebih dahulu.')
       return
     }
 
-    // Launch camera
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    })
-
-    if (!result.canceled) {
-      setFormData({ ...formData, image: result.assets[0].uri })
-    }
-  }
-
-  const showImageOptions = () => {
-    Alert.alert(
-      'Pilih Sumber Gambar',
-      'Dari mana anda ingin mengambil gambar?',
-      [
-        {
-          text: 'Kamera',
-          onPress: takePhoto,
-        },
-        {
-          text: 'Galeri',
-          onPress: pickImage,
-        },
-        {
-          text: 'Batal',
-          style: 'cancel',
-        },
-      ]
-    )
-  }
-
-  const handleSubmit = () => {
     setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      const token = await AsyncStorage.getItem('token') // Ganti jika key berbeda
+      if (!token) {
+        Alert.alert('Gagal', 'Token tidak ditemukan. Silakan login ulang.')
+        setIsSubmitting(false)
+        return
+      }
+
+      const formDataToSend = new FormData()
+      formDataToSend.append('Deskripsi', formData.description)
+
+      if (formData.image) {
+        const uriParts = formData.image.split('.')
+        const fileType = uriParts[uriParts.length - 1]
+
+        formDataToSend.append('Foto', {
+          uri: formData.image,
+          name: `photo.${fileType}`,
+          type: `image/${fileType}`,
+        } as any)
+      }
+
+      const response = await axios.post(
+        `${API_BASE_URL}/report`,
+        formDataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+
+      // Jika berhasil
       setIsSubmitting(false)
       setShowSuccess(true)
-      
-      // Start success animation
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -195,9 +151,13 @@ export default function LaporanScreen() {
           toValue: 1,
           friction: 4,
           useNativeDriver: true,
-        })
+        }),
       ]).start()
-    }, 1000)
+    } catch (error: any) {
+      console.error('Error sending report:', error)
+      Alert.alert('Gagal', 'Laporan gagal dikirim. Silakan coba lagi.')
+      setIsSubmitting(false)
+    }
   }
 
   const handleBackToHome = () => {
@@ -240,70 +200,6 @@ export default function LaporanScreen() {
           <View style={styles.formContainer}>
             <Text style={styles.formTitle}>Ketemu kucing? Ayo laporin di sini!</Text>
             
-            {/* Name Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Nama Pelapor</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Nama Lengkap"
-                value={formData.name}
-                onChangeText={(text) => setFormData({ ...formData, name: text })}
-                placeholderTextColor="#94A3B8"
-              />
-            </View>
-
-            {/* Number Phone Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Nomor Telepon</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Masukkan Nomor Telepon"
-                value={formData.nomortelepon}
-                onChangeText={(text) => setFormData({ ...formData, nomortelepon: text })}
-                placeholderTextColor="#94A3B8"
-                keyboardType="phone-pad"
-              />
-            </View>
-
-            {/* Email Input
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Masukkan Email"
-                value={formData.email}
-                onChangeText={(text) => setFormData({ ...formData, email: text })}
-                placeholderTextColor="#94A3B8"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View> */}
-
-            {/* Location Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Lokasi</Text>
-              <View style={styles.locationInputContainer}>
-                <TextInput
-                  style={[styles.input, styles.locationInput]}
-                  placeholder="Masukkan lokasi kucing"
-                  value={formData.location}
-                  onChangeText={(text) => setFormData({ ...formData, location: text })}
-                  placeholderTextColor="#94A3B8"
-                />
-                <TouchableOpacity 
-                  style={styles.locationButton}
-                  onPress={getCurrentLocation}
-                  disabled={isLoadingLocation}
-                >
-                  {isLoadingLocation ? (
-                    <ActivityIndicator color="#304153" />
-                  ) : (
-                    <Ionicons name="location" size={24} color="#304153" />
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-
             {/* Description Input */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Deskripsi</Text>
@@ -322,7 +218,7 @@ export default function LaporanScreen() {
             {/* Image Upload */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Foto Kucing</Text>
-              <TouchableOpacity style={styles.imageUploadButton} onPress={showImageOptions}>
+              <TouchableOpacity style={styles.imageUploadButton} onPress={pickImage}>
                 {formData.image ? (
                   <Image
                     source={{ uri: formData.image }}
@@ -332,7 +228,7 @@ export default function LaporanScreen() {
                 ) : (
                   <View style={styles.uploadPlaceholder}>
                     <Ionicons name="camera-outline" size={32} color="#94A3B8" />
-                    <Text style={styles.uploadText}>Ambil Foto</Text>
+                    <Text style={styles.uploadText}>Pilih Foto</Text>
                   </View>
                 )}
               </TouchableOpacity>

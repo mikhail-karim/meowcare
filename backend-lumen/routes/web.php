@@ -71,6 +71,8 @@ $router->group(['prefix' => 'warna'], function () use ($router) {
 $router->group(['prefix' => 'pets'], function () use ($router) {
     $router->get('/', 'PetController@index');
     $router->get('/{id}', 'PetController@show');
+    $router->get('/user/{userId}', 'PetController@getByUserId');
+    $router->get('/admin/{adminId}', 'PetController@getByAdminId');
 
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
         $router->post('/', 'PetController@store');
@@ -104,6 +106,7 @@ $router->group(['prefix' => 'riwayat_penyakit'], function () use ($router) {
 $router->group(['prefix' => 'pengajuan'], function () use ($router) {
     $router->get('/', 'PengajuanController@index');
     $router->get('/{id}', 'PengajuanController@show');
+    $router->get('/user/{userId}', 'PengajuanController@getByUserId');
     $router->delete('/{id}', 'PengajuanController@destroy');
 
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
@@ -111,6 +114,8 @@ $router->group(['prefix' => 'pengajuan'], function () use ($router) {
         $router->put('/{id}', 'PengajuanController@update');
     });
 });
+
+
 
 // Konfirmasi
 $router->group(['prefix' => 'konfirmasi', 'middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
@@ -127,7 +132,7 @@ $router->group(['prefix' => 'artikel'], function () use ($router) {
         $router->put('/view/{id}', 'ArtikelController@view');
         $router->put('/likes/{id}', 'ArtikelController@likes');
     });
-
+    
     $router->group(['middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
         $router->post('/', 'ArtikelController@storeAsAdmin');
         $router->put('/{id}', 'ArtikelController@update');
@@ -149,7 +154,7 @@ $router->group(['prefix' => 'comments', 'middleware' => ['jwt.auth', 'role:user'
 $router->group(['prefix' => 'donation'], function () use ($router) {
     $router->get('/', 'DonationController@index');
     $router->get('/{id}', 'DonationController@show');
-
+    
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
         $router->post('/', 'DonationController@store');
         $router->put('/{id}', 'DonationController@update');
@@ -163,13 +168,14 @@ $router->group(['prefix' => 'report'], function () use ($router) {
     $router->get('/rescued', 'ReportController@getRescued');
     $router->get('/notrescued', 'ReportController@getNotRescued');
     $router->get('/listreport', 'ReportController@allreport');
-
+    $router->get('/user/{userId}', 'ReportController@getByUserId');
+    
     $router->group(['middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
         $router->put('/rescued/{reportId}', 'ReportController@updateRescuedStatus');
     });
-
+    
     $router->get('/{id}', 'ReportController@show');
-
+    
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
         $router->post('/', 'ReportController@store');
         $router->put('/{id}', 'ReportController@update');

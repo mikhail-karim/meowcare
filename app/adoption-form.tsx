@@ -1,6 +1,8 @@
-import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
-import { useLocalSearchParams, useRouter } from "expo-router"
-import { useEffect, useState } from "react"
+import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Image,
   SafeAreaView,
@@ -10,11 +12,19 @@ import {
   TextInput,
   TouchableOpacity,
   View
-} from "react-native"
-import { Pet } from '../components/types'
-import { typography } from './theme'
+} from "react-native";
+import { Pet } from '../components/types';
+import { typography } from './theme';
+
+const API_BASE_URL = 'http://192.168.0.108:8000';
 
 export default function AdoptionFormScreen() {
+  
+  const [initialFormData, setInitialFormData] = useState({
+    name: '',
+    phone: '',
+    address: '',
+  });
   const router = useRouter()
   const params = useLocalSearchParams()
   const [cat, setCat] = useState<Pet | null>(null)
@@ -27,6 +37,37 @@ export default function AdoptionFormScreen() {
     environment: '',
     familyApproval: null as null | boolean,
   })
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('id');
+        const token = await AsyncStorage.getItem('token');
+        if (!userId || !token) return;
+
+        const response = await axios.get(`${API_BASE_URL}/users/id/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const user = response.data; // Langsung ambil dari response.data
+
+        const userData = {
+          name: user.Nama_Lengkap || '',
+          phone: user.Nomor_HP || '',
+          address: user.Alamat || '',
+        };
+
+        setFormData(prev => ({ ...prev, ...userData }));
+        setInitialFormData(userData);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
 
   useEffect(() => {
     if (params.cat) {
@@ -39,17 +80,73 @@ export default function AdoptionFormScreen() {
     }
   }, [params.cat])
 
-  const handleNext = () => {
-    if (step < 3) setStep(step + 1)
-  }
+  const handleNext = async () => {
+    if (step === 1) {
+      const isChanged =
+        formData.name !== initialFormData.name ||
+        formData.phone !== initialFormData.phone ||
+        formData.address !== initialFormData.address;
+
+      if (isChanged) {
+        try {
+          const token = await AsyncStorage.getItem('token');
+          await axios.put(`${API_BASE_URL}/users/edit`, {
+            Nama_Lengkap: formData.name,
+            Nomor_HP: formData.phone,
+            Alamat: formData.address,
+          }, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          // Perbarui data awal setelah edit berhasil
+          setInitialFormData({
+            name: formData.name,
+            phone: formData.phone,
+            address: formData.address,
+          });
+        } catch (error) {
+          console.error('Error updating user info:', error);
+        }
+      }
+    }
+
+    if (step < 3) setStep(step + 1);
+  };
+
   const handleBack = () => {
     if (step === 1) router.back()
     else setStep(step - 1)
   }
-  const handleSubmit = () => {
-    setStep(3)
-    // TODO: Implement actual submission logic
-  }
+  
+  const handleSubmit = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const selectedCatStr = await AsyncStorage.getItem('selectedCat');
+      if (!token || !selectedCatStr) {
+        console.error('Token atau selectedCat tidak ditemukan.');
+        return;
+      }
+
+      const selectedCat = JSON.parse(selectedCatStr);
+      const response = await axios.post(`${API_BASE_URL}/pengajuan`, {
+        Alasan: formData.motivation,
+        Pet_ID: selectedCat.id,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Pengajuan berhasil:', response.data);
+      setStep(3);
+    } catch (error) {
+      console.error('Gagal mengirim pengajuan:', error);
+    }
+  };
 
   if (!cat) return null
 
@@ -148,41 +245,14 @@ export default function AdoptionFormScreen() {
             <Text style={styles.sectionTitle}>Informasi Tambahan</Text>
             <Text style={styles.sectionDesc}>Mohon lengkapi beberapa pertanyaan berikut.</Text>
             <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>Apa motivasimu untuk mengadopsi kucing?</Text>
+              <Text style={styles.inputLabel}>Apa alasanmu untuk mengadopsi kucing?</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Tuliskan motivasimu"
+                placeholder="Tuliskan alasanmu"
                 value={formData.motivation}
                 onChangeText={text => setFormData({ ...formData, motivation: text })}
                 placeholderTextColor="#B0B0B0"
               />
-            </View>
-            <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>Bagaimana lingkungan tempat tinggalmu?</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Apartemen/rumah, ada ruang outdoor..."
-                value={formData.environment}
-                onChangeText={text => setFormData({ ...formData, environment: text })}
-                placeholderTextColor="#B0B0B0"
-              />
-            </View>
-            <View style={styles.inputWrap}>
-              <Text style={styles.inputLabel}>Apakah seluruh anggota keluarga di rumah menyetujui adopsi ini?</Text>
-              <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
-                <TouchableOpacity
-                  style={[styles.choiceButton, formData.familyApproval === true && styles.choiceButtonActive]}
-                  onPress={() => setFormData({ ...formData, familyApproval: true })}
-                >
-                  <Text style={[styles.choiceButtonText, formData.familyApproval === true && styles.choiceButtonTextActive]}>Ya</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.choiceButton, formData.familyApproval === false && styles.choiceButtonActive]}
-                  onPress={() => setFormData({ ...formData, familyApproval: false })}
-                >
-                  <Text style={[styles.choiceButtonText, formData.familyApproval === false && styles.choiceButtonTextActive]}>Tidak</Text>
-                </TouchableOpacity>
-              </View>
             </View>
             <TouchableOpacity style={styles.nextButton} onPress={handleSubmit}>
               <Text style={styles.nextButtonText}>Kirim Permohonan</Text>
@@ -199,7 +269,13 @@ export default function AdoptionFormScreen() {
               {'\n'}
               Tim Meowcare akan segera melakukan review dan akan mengabari Anda secepatnya untuk proses berikutnya. Terima kasih banyak!
             </Text>
+            <TouchableOpacity style={styles.nextButton} onPress={() => router.push({
+              pathname: '/home',
+            })}>
+              <Text style={styles.nextButtonText}>Kembali</Text>
+            </TouchableOpacity>
           </View>
+          
         )}
       </ScrollView>
     </SafeAreaView>

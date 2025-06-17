@@ -10,6 +10,7 @@ export type Pet = {
   breed?: string;
   color?: string;
   status?: 'Tersedia' | 'Diadopsi' | 'Pending'; 
+  owner: number;
 };
 
 export type Article = {
