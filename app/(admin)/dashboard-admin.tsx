@@ -560,13 +560,13 @@ export default function AdoptionListScreen() {
       </ScrollView>
 
       {renderFilterModal()}
-      
+{/*       
         <TouchableOpacity 
             style={styles.addButton}
             onPress={() => router.push('/(admin)/add-kucing-form-admin')}
         >
             <Ionicons name="add" size={24} color="white" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
     </SafeAreaView>
   )
 }

@@ -35,29 +35,29 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="Report"
-        options={{
-          title: 'Laporan',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="document-text-outline" size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="adoption-list"
-        options={{
-          title: 'Adopt',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="paw-outline" size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="article-admin"
         options={{
           title: 'Artikel',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="book-outline" size={28} color={color} />
+            <Ionicons name="newspaper-outline" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="list-report"
+        options={{
+          title: 'Laporan',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="alert-circle-outline" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="add-kucing-form-admin"
+        options={{
+          title: 'Adopsi',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="add-circle-outline" size={28} color={color} />
           ),
         }}
       />
