@@ -2,15 +2,16 @@ import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icon
 import { useRouter } from "expo-router"
 import { useEffect, useState } from "react"
 import {
-    Image,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Image,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native"
 import { PetCard } from '../../components/PetCard'
 import { Pet } from '../../components/types'
@@ -203,6 +204,26 @@ export default function AdoptionListScreen() {
       location: ''
     })
     setFilteredCats(cats)
+  }
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Logout",
+          onPress: () => {
+            router.replace('/signin')
+          },
+          style: "destructive"
+        }
+      ]
+    )
   }
 
   const renderFilterModal = () => (
@@ -486,12 +507,14 @@ export default function AdoptionListScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        {/* <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
-        </TouchableOpacity> */}
         <Text style={styles.headerTitle}>Dashboard</Text>
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
+          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -553,24 +576,25 @@ const styles = StyleSheet.create({
     ...container.screen,
   },
   header: {
-    ...container.header,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 12,
+    backgroundColor: colors.background,
   },
-  backButton: {
-    position: "absolute",
-    left: spacing.lg,
-    top: spacing.md,
+  headerTitle: {
+    ...typography.header.large,
+    color: colors.text.primary,
+  },
+  logoutButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: colors.surface.medium,
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 2,
-  },
-  headerTitle: {
-    ...typography.header.medium,
-    color: colors.text.primary,
-    textAlign: "center",
   },
   content: {
     ...container.content,
