@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { container, spacing, typography, colors } from "./theme";
+import { colors, spacing, typography } from "./theme";
 
 export default function EdukasiDetailScreen() {
   const router = useRouter();
@@ -45,115 +45,119 @@ export default function EdukasiDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.imageContainer}>
-          <Image
-            source={require("../assets/images/street-food.png")}
-            style={styles.headerImage}
-            resizeMode="cover"
-          />
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="chevron-back" size={24} color="#304153" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.content}>
-          <View style={styles.headerRow}>
-            <Text style={[typography.header.medium, styles.title]}>
-              LOREM IPSUM
-            </Text>
-            <View style={styles.category}>
-              <Text style={styles.categoryText}>Kegiatan</Text>
-            </View>
-          </View>
-
-          <View style={styles.authorRow}>
-            <Ionicons
-              name="person-outline"
-              size={14}
-              color="#8A8A8A"
-              style={{ marginRight: 4 }}
-            />
-            <Text style={styles.author}>Penulis</Text>
-          </View>
-
-          <Text style={[typography.body.small.regular, styles.bodyText]}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer
-            pharetra metus metus, vitae maximus nulla maximus sit amet.
-            Phasellus sed aliquam ligula. Nulla facilisi. Mauris ac consectetur
-            metus. Nam sit amet varius felis, nec maximus quam...
-          </Text>
-
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Ionicons name="eye-outline" size={16} color="#8A8A8A" />
-              <Text style={styles.statText}>259</Text>
-            </View>
-
-            <TouchableOpacity style={styles.statItem} onPress={handleLike}>
-              <Ionicons
-                name={liked ? "heart" : "heart-outline"}
-                size={16}
-                color={liked ? "#E74C3C" : "#8A8A8A"}
-              />
-              <Text
-                style={[
-                  styles.statText,
-                  liked && { color: "#E74C3C", fontWeight: "bold" },
-                ]}
-              >
-                {likeCount}
-              </Text>
-            </TouchableOpacity>
-
-            <View style={styles.statItem}>
-              <Ionicons name="chatbubble-outline" size={16} color="#8A8A8A" />
-              <Text style={styles.statText}>{comments.length}</Text>
-            </View>
-          </View>
-
-          <Text style={styles.commentHeader}>Komentar</Text>
-
-          {comments.map((item) => (
-            <View key={item.id} style={styles.commentItem}>
-              <Image
-                source={require("../assets/images/mini-avatar.jpeg")}
-                style={styles.avatar}
-              />
-              <View style={styles.commentContent}>
-                <Text style={styles.commentAuthor}>{item.author}</Text>
-                <Text style={styles.commentText}>{item.text}</Text>
-              </View>
-            </View>
-          ))}
-
-          <View style={styles.commentInputRow}>
-            <TextInput
-              placeholder="Tulis komentar di sini..."
-              placeholderTextColor="#B0B0B0"
-              style={styles.commentInput}
-              value={commentInput}
-              onChangeText={setCommentInput}
-              underlineColorAndroid="transparent"
-              selectionColor="#304153"
-              autoCorrect={false}
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.imageContainer}>
+            <Image
+              source={require("../assets/images/street-food.png")}
+              style={styles.headerImage}
+              resizeMode="cover"
             />
             <TouchableOpacity
-              style={styles.sendButton}
-              onPress={handleAddComment}
+              style={styles.backButton}
+              onPress={() => router.back()}
             >
-              <Ionicons name="send" size={20} color="white" />
+              <Ionicons name="chevron-back" size={24} color="#304153" />
             </TouchableOpacity>
           </View>
+
+          <View style={styles.content}>
+            <View style={styles.headerRow}>
+              <Text style={[typography.header.medium, styles.title]}>
+                LOREM IPSUM
+              </Text>
+              <View style={styles.category}>
+                <Text style={styles.categoryText}>Kegiatan</Text>
+              </View>
+            </View>
+
+            <View style={styles.authorRow}>
+              <Ionicons
+                name="person-outline"
+                size={14}
+                color="#8A8A8A"
+                style={{ marginRight: 4 }}
+              />
+              <Text style={styles.author}>Penulis</Text>
+            </View>
+
+            <Text style={[typography.body.small.regular, styles.bodyText]}>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer
+              pharetra metus metus, vitae maximus nulla maximus sit amet.
+              Phasellus sed aliquam ligula. Nulla facilisi. Mauris ac
+              consectetur metus. Nam sit amet varius felis, nec maximus quam...
+            </Text>
+
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Ionicons name="eye-outline" size={16} color="#8A8A8A" />
+                <Text style={styles.statText}>259</Text>
+              </View>
+
+              <TouchableOpacity style={styles.statItem} onPress={handleLike}>
+                <Ionicons
+                  name={liked ? "heart" : "heart-outline"}
+                  size={16}
+                  color={liked ? "#E74C3C" : "#8A8A8A"}
+                />
+                <Text
+                  style={[
+                    styles.statText,
+                    liked && { color: "#E74C3C", fontWeight: "bold" },
+                  ]}
+                >
+                  {likeCount}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.statItem}>
+                <Ionicons
+                  name="chatbubble-outline"
+                  size={16}
+                  color="#8A8A8A"
+                />
+                <Text style={styles.statText}>{comments.length}</Text>
+              </View>
+            </View>
+
+            <Text style={styles.commentHeader}>Komentar</Text>
+
+            {comments.map((item) => (
+              <View key={item.id} style={styles.commentItem}>
+                <Image
+                  source={require("../assets/images/mini-avatar.jpeg")}
+                  style={styles.avatar}
+                />
+                <View style={styles.commentContent}>
+                  <Text style={styles.commentAuthor}>{item.author}</Text>
+                  <Text style={styles.commentText}>{item.text}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+
+        {/* Input komentar tetap di bawah */}
+        <View style={styles.commentInputRowFixed}>
+          <TextInput
+            placeholder="Tulis komentar di sini..."
+            placeholderTextColor="#B0B0B0"
+            style={styles.commentInput}
+            value={commentInput}
+            onChangeText={setCommentInput}
+            underlineColorAndroid="transparent"
+            selectionColor="#304153"
+            autoCorrect={false}
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={handleAddComment}>
+            <Ionicons name="send" size={20} color="white" />
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -274,12 +278,16 @@ const styles = StyleSheet.create({
     ...typography.body.small.regular,
     color: colors.text.secondary,
   },
-  commentInputRow: {
+  commentInputRowFixed: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.surface.dark,
     padding: 6,
     borderRadius: 32,
+    position: "absolute",
+    bottom: 16,
+    left: 16,
+    right: 16,
   },
   commentInput: {
     flex: 1,

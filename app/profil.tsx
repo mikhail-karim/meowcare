@@ -173,7 +173,11 @@ export default function ProfilScreen() {
         <View style={styles.petList}>
           {activeTab !== "Laporan"
             ? filteredPets.map((pet, index) => (
-                <View key={index} style={styles.petCard}>
+                <TouchableOpacity
+                  key={index}
+                  style={styles.petCard}
+                  onPress={() => router.push("/view-cat")}
+                >
                   <Image source={pet.image} style={styles.petImage} />
                   <View style={styles.petInfo}>
                     <View style={styles.petHeader}>
@@ -206,7 +210,7 @@ export default function ProfilScreen() {
                       <Text style={styles.petMeta}>{pet.age}</Text>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))
             : reportData.map((report, index) => (
                 <View key={index} style={styles.petCard}>

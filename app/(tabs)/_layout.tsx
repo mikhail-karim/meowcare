@@ -1,8 +1,8 @@
+import React from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import { Tabs } from 'expo-router'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { BottomTabBarIconProps } from '@react-navigation/bottom-tabs'
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets()
@@ -32,8 +32,8 @@ export default function TabLayout() {
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }: BottomTabBarIconProps) => (
-            <Ionicons name="home-outline" size={28} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
       />
@@ -41,8 +41,8 @@ export default function TabLayout() {
         name="laporan"
         options={{
           title: 'Laporan',
-          tabBarIcon: ({ color }: BottomTabBarIconProps) => (
-            <Ionicons name="document-text-outline" size={28} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="document-text-outline" size={size} color={color} />
           ),
         }}
       />
@@ -50,8 +50,8 @@ export default function TabLayout() {
         name="adoption-list"
         options={{
           title: 'Adopsi',
-          tabBarIcon: ({ color }: BottomTabBarIconProps) => (
-            <Ionicons name="paw-outline" size={28} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="paw-outline" size={size} color={color} />
           ),
         }}
       />
@@ -59,8 +59,8 @@ export default function TabLayout() {
         name="artikel"
         options={{
           title: 'Artikel',
-          tabBarIcon: ({ color }: BottomTabBarIconProps) => (
-            <Ionicons name="book-outline" size={28} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="book-outline" size={size} color={color} />
           ),
         }}
       />
