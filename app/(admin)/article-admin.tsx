@@ -84,7 +84,7 @@ export default function EdukasiScreen() {
       </ScrollView>
       <TouchableOpacity 
           style={styles.addButton}
-          onPress={() => router.push('/(tabs)/laporan')}
+          onPress={() => router.push('/add-artikel-admin')}
       >
           <Ionicons name="add" size={24} color="white" />
       </TouchableOpacity>
