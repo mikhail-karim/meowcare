@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { typography } from '../app/theme';
-import { Article } from './types'; // Buat interface Article di file ini atau terpisah
+import { Article } from './types'; 
 
 interface ArticleCardProps {
   article: Article;

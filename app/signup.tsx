@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors, container, spacing, typography } from './theme';
 
-const API_BASE_URL = 'http://192.168.1.154:8000'; // Global base URL yang sama seperti di SignInScreen
+const API_BASE_URL = 'http://192.168.94.249:8000'; // Global base URL yang sama seperti di SignInScreen
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -31,7 +31,10 @@ export default function SignUpScreen() {
       });
 
       const data = response.data;
-
+      await AsyncStorage.setItem('nama_lengkap', data.user.Nama_Lengkap);
+      await AsyncStorage.setItem('username', data.user.Username);
+      await AsyncStorage.setItem('id', data.user.User_ID);
+      
       if (data.token) {
         await AsyncStorage.setItem('token', data.token);
         router.push('/home');
@@ -49,7 +52,7 @@ export default function SignUpScreen() {
       setLoading(false);
     }
   };
-  
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>

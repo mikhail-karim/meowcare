@@ -108,7 +108,48 @@ class UserController extends Controller
             return response()->json(['token' => $token, 'user' => $user]);
         }
     }
+    
+    public function uploadProfilePhoto(Request $request)
+    {
+        // Validasi file dengan nama field 'photo' (pastikan sesuai nama input di frontend)
+        $validator = Validator::make($request->all(), [
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+
+            // Buat nama file unik
+            $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+
+            // Set folder tujuan
+            $folder = 'profile';
+
+            // Set path base folder public/images/profile
+            $path = app()->basePath('public/images/' . $folder);
+
+            // Cek dan buat folder jika belum ada
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
+
+            // Pindahkan file ke lokasi tujuan
+            $file->move($path, $filename);
+
+            // Return response sukses
+            return response()->json([
+                'message' => 'Foto berhasil diupload',
+                'file_path' => 'images/' . $folder . '/' . $filename,
+            ]);
+        }
+
+        return response()->json(['message' => 'File foto tidak ditemukan'], 400);
+    }
+    
     public function logout(Request $request)
     {
         try {
@@ -193,5 +234,27 @@ class UserController extends Controller
 
         $user->delete();
         return response()->json(['message' => 'User deleted']);
+    }
+
+    public function forgetPassword(Request $request)
+    {
+        // Validasi email dan password baru
+        $validator = Validator::make($request->all(), [
+            'Email' => 'required|email|exists:users,Email',
+            'New_Password' => 'required|string|min:6|confirmed',
+        ]);
+
+        // Cari user berdasarkan email
+        $user = User::where('Email', $request->Email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        // Update password baru (hash dulu)
+        $user->Password = Hash::make($request->New_Password);
+        $user->save();
+
+        return response()->json(['message' => 'Password updated successfully']);
     }
 }

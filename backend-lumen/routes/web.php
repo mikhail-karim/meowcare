@@ -11,8 +11,10 @@ $router->group(['prefix' => 'users'], function () use ($router) {
     $router->get('/', 'UserController@getAll');
     $router->get('/id/{id}', 'UserController@getById');
     $router->get('/role/{role}', 'UserController@getByRole');
-    $router->post('/register', 'UserController@register');
-    $router->post('/login', 'UserController@login');
+    $router->post('/register', 'UserController@register'); //Nama_Lengkap, Username, Email, Password, Foto_Profil
+    $router->post('/login', 'UserController@login'); //Email, Password
+    $router->post('/upload_photo', 'UserController@uploadProfilePhoto');
+    $router->put('/forget_password', 'UserController@forgetPassword');
 
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
         $router->post('/logout', 'UserController@logout');
