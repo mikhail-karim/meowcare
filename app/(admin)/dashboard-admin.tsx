@@ -2,15 +2,15 @@ import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icon
 import { useRouter } from "expo-router"
 import { useEffect, useState } from "react"
 import {
-    Image,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Image,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native"
 import { PetCard } from '../../components/PetCard'
 import { Pet } from '../../components/types'
