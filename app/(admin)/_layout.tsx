@@ -35,7 +35,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="Report"
+        name="list-report"
         options={{
           title: 'Laporan',
           tabBarIcon: ({ color }) => (
@@ -44,7 +44,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="adoption-list"
+        name="add-kucing-form-admin"
         options={{
           title: 'Adopt',
           tabBarIcon: ({ color }) => (

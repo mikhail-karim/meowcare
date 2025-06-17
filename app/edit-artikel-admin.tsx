@@ -68,7 +68,7 @@ export default function AddArticleForm() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.push('/(admin)/article-admin')}>
           <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Tambah Artikel</Text>
+        <Text style={styles.headerTitle}>Edit Artikel</Text>
       </View>
 
       <View style={styles.formContainer}>
