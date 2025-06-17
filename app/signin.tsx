@@ -10,7 +10,7 @@ export default function SignInScreen() {
   const [Email, setEmail] = useState('');
   const [Password, setPassword] = useState('');
 
-  const API_BASE_URL = 'http://192.168.1.154:8000';
+  const API_BASE_URL = 'http://192.168.94.249:8000';
 
   const handleSignIn = async () => {
     if (!Email || !Password) {
@@ -27,10 +27,14 @@ export default function SignInScreen() {
       const data = response.data;
 
       await AsyncStorage.setItem('token', data.token);
-
+      await AsyncStorage.setItem('nama_lengkap', data.user.Nama_Lengkap);
+      await AsyncStorage.setItem('username', data.user.Username);
+      
       if (Email.toLowerCase() === 'admin@admin.com') {
+        await AsyncStorage.setItem('id', data.admin.Admin_ID);
         router.push('/(admin)/dashboard-admin');
       } else {
+        await AsyncStorage.setItem('id', data.user.User_ID);
         router.push('/home');
       }
     } catch (error) {

@@ -14,6 +14,7 @@ $router->group(['prefix' => 'users'], function () use ($router) {
     $router->get('/role/{role}', 'UserController@getByRole');
     $router->post('/register', 'UserController@register'); //Nama_Lengkap, Username, Email, Password, Foto_Profil
     $router->post('/login', 'UserController@login'); //Email, Password
+    $router->post('/upload_photo', 'UserController@uploadProfilePhoto');
 
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
         $router->post('/logout', 'UserController@logout');
