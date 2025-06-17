@@ -1,3 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -5,17 +7,37 @@ import { colors, container, spacing, typography } from './theme';
 
 export default function SignInScreen() {
   const router = useRouter();
+  const [Email, setEmail] = useState('');
+  const [Password, setPassword] = useState('');
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const handleSignIn = async () => {
+    if (!Email || !Password) {
+      Alert.alert('Error', 'Mohon masukkan Email dan Password');
+      return;
+    }
 
-  const handleSignIn = () => {
-    // TODO: Integrasi autentikasi
-    if (email && password) {
-      console.log('Logging in with:', email, password);
-      router.push('/home'); 
-    } else {
-      Alert.alert('Error', 'Mohon masukkan email dan password');
+    try {
+      const response = await axios.post('http://192.168.1.154:8000/users/login', {
+        Email,
+        Password,
+      });
+
+      const data = response.data;
+
+      await AsyncStorage.setItem('token', data.token);
+
+      if (Email.toLowerCase() === 'admin@admin.com') {
+        router.push('/(admin)/dashboard-admin');
+      } else {
+        router.push('/home');
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        Alert.alert('Login Failed', error.response?.data?.message || 'Gagal login, periksa kembali Email dan Password Anda.');
+      } else {
+        Alert.alert('Error', 'Terjadi kesalahan jaringan. Silakan coba lagi.');
+      }
+      console.error('Login error:', error);
     }
   };
 
@@ -26,9 +48,9 @@ export default function SignInScreen() {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Email</Text>
         <TextInput
-          value={email}
+          value={Email}
           onChangeText={setEmail}
-          placeholder="Masukkan email Anda"
+          placeholder="Masukkan Email Anda"
           placeholderTextColor="#A9A9A9"
           style={styles.input}
           keyboardType="email-address"
@@ -39,9 +61,9 @@ export default function SignInScreen() {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Password</Text>
         <TextInput
-          value={password}
+          value={Password}
           onChangeText={setPassword}
-          placeholder="Masukkan password Anda"
+          placeholder="Masukkan Password Anda"
           placeholderTextColor="#A9A9A9"
           style={styles.input}
           secureTextEntry
@@ -111,7 +133,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     borderRadius: 32,
     alignItems: 'center',
-    width: 150, 
+    width: 150,
   },
   buttonText: {
     ...typography.body.medium.semiBold,
@@ -130,4 +152,4 @@ const styles = StyleSheet.create({
     ...typography.body.medium.semiBold,
     color: colors.primary,
   },
-}); 
+});

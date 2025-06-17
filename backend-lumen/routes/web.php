@@ -47,12 +47,6 @@ $router->group(['prefix' => 'penyakit'], function () use ($router) {
     $router->delete('/{id}', 'PenyakitController@destroy');
 });
 
-$router->get('/seed-penyakit', function () {
-    require_once database_path('seeders/PenyakitSeeder.php');
-    $seeder = new \Database\Seeders\PenyakitSeeder();
-    $seeder->run();
-    return response()->json(['status' => 'Seeder berhasil dijalankan!']);
-});
 
 // Ras
 $router->group(['prefix' => 'ras'], function () use ($router) {
@@ -63,12 +57,7 @@ $router->group(['prefix' => 'ras'], function () use ($router) {
     $router->delete('/{id}', 'RasController@destroy');
 });
 
-$router->get('/seed-ras', function () {
-    require_once database_path('seeders/RasSeeder.php');
-    $seeder = new \Database\Seeders\RasSeeder();
-    $seeder->run();
-    return response()->json(['status' => 'Seeder Ras berhasil dijalankan!']);
-});
+
 
 // Warna
 $router->group(['prefix' => 'warna'], function () use ($router) {
@@ -79,12 +68,7 @@ $router->put('/{id}', 'WarnaController@update');
 $router->delete('/{id}', 'WarnaController@destroy');
 });
 
-$router->get('/seed-warna', function () {
-    require_once database_path('seeders/WarnaSeeder.php');
-    $seeder = new \Database\Seeders\WarnaSeeder();
-    $seeder->run();
-    return response()->json(['status' => 'Seeder Warna berhasil dijalankan!']);
-});
+
 
 // Pets
 $router->group(['prefix' => 'pets'], function () use ($router) {
@@ -197,4 +181,29 @@ $router->group(['prefix' => 'report'], function () use ($router) {
         $router->delete('/{id}', 'ReportController@destroy');
     });
     
+});
+
+
+//Seeders
+
+$router->get('/seed-all', function () {
+    require_once database_path('seeders/UserSeeder.php');
+    require_once database_path('seeders/AdminSeeder.php');
+    require_once database_path('seeders/PenyakitSeeder.php');
+    require_once database_path('seeders/RasSeeder.php');
+    require_once database_path('seeders/WarnaSeeder.php');
+    
+    $usersSeeder = new \Database\Seeders\UserSeeder();
+    $adminSeeder = new \Database\Seeders\AdminSeeder();
+    $penyakitSeeder = new \Database\Seeders\PenyakitSeeder();
+    $rasSeeder = new \Database\Seeders\RasSeeder();
+    $warnaSeeder = new \Database\Seeders\WarnaSeeder();
+    
+    $usersSeeder->run();
+    $adminSeeder->run();
+    $penyakitSeeder->run();
+    $rasSeeder->run();
+    $warnaSeeder->run();
+
+    return response()->json(['status' => 'Semua Seeder berhasil dijalankan!']);
 });

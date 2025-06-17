@@ -30,11 +30,15 @@ $app->configure('app');
 $app->configure('auth');
 
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+$app->middleware([
+    App\Http\Middleware\CorsMiddleware::class,
+]);
 
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
     'role' => App\Http\Middleware\CheckJWTUserRole::class,
 ]);
+
 
 $app->router->group([
     'namespace' => 'App\Http\Controllers',

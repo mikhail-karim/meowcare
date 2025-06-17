@@ -1,7 +1,10 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors, container, spacing, typography } from './theme';
+
+// Hapus deklarasi MMKV storage karena kita pakai AsyncStorage sekarang
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -10,16 +13,48 @@ export default function SignUpScreen() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSignUp = () => {
-    if (fullName && username && email && password) {
-      console.log('Signing up with:', fullName, username, email, password);
-      router.push('/home');
-    } else {
+  const handleSignUp = async () => {
+    if (!fullName || !username || !email || !password) {
       Alert.alert('Error', 'Mohon isi semua field');
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:8000/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          Nama_Lengkap: fullName,
+          Username: username,
+          Email: email,
+          Password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.token) {
+          // Menggunakan AsyncStorage untuk menyimpan token secara async
+          await AsyncStorage.setItem('token', data.token);
+          router.push('/home');
+        } else {
+          Alert.alert('Error', 'Token tidak ditemukan pada response');
+        }
+      } else {
+        Alert.alert('Error', data.message || 'Gagal melakukan registrasi');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Terjadi kesalahan jaringan atau server');
+      console.error('SignUp error: ', error);
+    } finally {
+      setLoading(false);
     }
   };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
@@ -72,8 +107,12 @@ export default function SignUpScreen() {
       </View>
 
       <View style={styles.buttonWrapper}>
-        <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-          <Text style={styles.buttonText}>Daftar</Text>
+        <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color={colors.background} />
+          ) : (
+            <Text style={styles.buttonText}>Daftar</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -144,4 +183,4 @@ const styles = StyleSheet.create({
     ...typography.body.medium.semiBold,
     color: colors.primary,
   },
-}); 
+});
