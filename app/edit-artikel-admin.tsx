@@ -1,17 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
-import { useNavigation, useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import React, { useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { container, spacing, typography } from './theme';
-
-
+  
 export default function AddArticleForm() {
-  const router = useRouter()
-  const navigation = useNavigation()
-  const { params } = useLocalSearchParams(); // or useRoute()
-  const articleToEdit = params?.article ? JSON.parse(params.article as string) : null;
+  const router = useRouter();
+  const navigation = useNavigation();
+  const { article } = useLocalSearchParams();
+
+  let articleToEdit = null;
+  try {
+    if (typeof article === 'string') {
+      articleToEdit = JSON.parse(article);
+    }
+  } catch (e) {
+    console.error('Failed to parse article JSON:', e);
+  }
+
   const initialFormState = {
     judul: articleToEdit?.Judul || '',
     kategori: articleToEdit?.Kategori || 'edukasi',
@@ -25,12 +33,8 @@ export default function AddArticleForm() {
   const [thumbnail, setThumbnail] = useState<ImagePicker.ImagePickerAsset | null>(
     initialFormState.thumbnail ? { uri: initialFormState.thumbnail } as any : null
   );
-  const [formData, setFormData] = useState(initialFormState)
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const fadeAnim = useRef(new Animated.Value(0)).current
-  const scaleAnim = useRef(new Animated.Value(0)).current
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -44,44 +48,18 @@ export default function AddArticleForm() {
     }
   };
 
-    useEffect(() => {
-      if (articleToEdit) {
-        setJudul(articleToEdit.Judul || '');
-        setKategori(articleToEdit.Kategori || 'edukasi');
-        setArtikel(articleToEdit.Artikel || '');
-        setThumbnail(articleToEdit.Thumbnail ? { uri: articleToEdit.Thumbnail } as any : null);
-      }
-    }, []);
-  
-//     // Reset form when screen becomes focused
-//   useFocusEffect(
-//       useCallback(() => {
-//         resetForm()
-//     }, [])
-//    )
-
-    const handleSubmit = () => {
-      const payload = {
-        Judul: judul,
-        Kategori: kategori,
-        Artikel: artikel,
-        Thumbnail: thumbnail?.uri,
-      };
-
-      if (articleToEdit?.Artikel_ID) {
-        // Do update request here
-        console.log('Updating article:', articleToEdit.Artikel_ID, payload);
-        // await axios.put(`/api/articles/${articleToEdit.Artikel_ID}`, payload);
-      }
+  const handleSubmit = () => {
+    const payload = {
+      Judul: judul,
+      Kategori: kategori,
+      Artikel: artikel,
+      Thumbnail: thumbnail?.uri,
     };
 
-  useEffect(() => {
-      const unsubscribe = navigation.addListener('beforeRemove', () => {
-        resetForm()
-      })
-  
-      return unsubscribe
-  }, [navigation, resetForm])
+    if (articleToEdit?.Artikel_ID) {
+      console.log('Updating article:', articleToEdit.Artikel_ID, payload);
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -146,7 +124,9 @@ export default function AddArticleForm() {
         </View>
 
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Submit</Text>
+          <Text style={styles.submitButtonText}>
+            {articleToEdit ? 'Update' : 'Submit'}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
