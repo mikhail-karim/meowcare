@@ -1,52 +1,42 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { MMKV } from 'react-native-mmkv';
 import { colors, container, spacing, typography } from './theme';
-
-// Inisialisasi instance MMKV
-const storage = new MMKV();
 
 export default function SignInScreen() {
   const router = useRouter();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [Email, setEmail] = useState('');
+  const [Password, setPassword] = useState('');
 
   const handleSignIn = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Mohon masukkan email dan password');
+    if (!Email || !Password) {
+      Alert.alert('Error', 'Mohon masukkan Email dan Password');
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:8000/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const response = await axios.post('http://192.168.1.154:8000/users/login', {
+        Email,
+        Password,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        Alert.alert('Login Failed', errorData.message || 'Gagal login, periksa kembali email dan password Anda.');
-        return;
-      }
+      const data = response.data;
 
-      const data = await response.json();
+      await AsyncStorage.setItem('token', data.token);
 
-      // Simpan token di local storage menggunakan MMKV
-      storage.set('token', data.token);
-
-      // Navigate berdasarkan email admin
-      if (email.toLowerCase() === 'admin@admin.com') {
+      if (Email.toLowerCase() === 'admin@admin.com') {
         router.push('/(admin)/dashboard-admin');
       } else {
         router.push('/home');
       }
     } catch (error) {
-      Alert.alert('Error', 'Terjadi kesalahan jaringan. Silakan coba lagi.');
+      if (axios.isAxiosError(error)) {
+        Alert.alert('Login Failed', error.response?.data?.message || 'Gagal login, periksa kembali Email dan Password Anda.');
+      } else {
+        Alert.alert('Error', 'Terjadi kesalahan jaringan. Silakan coba lagi.');
+      }
       console.error('Login error:', error);
     }
   };
@@ -58,9 +48,9 @@ export default function SignInScreen() {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Email</Text>
         <TextInput
-          value={email}
+          value={Email}
           onChangeText={setEmail}
-          placeholder="Masukkan email Anda"
+          placeholder="Masukkan Email Anda"
           placeholderTextColor="#A9A9A9"
           style={styles.input}
           keyboardType="email-address"
@@ -71,9 +61,9 @@ export default function SignInScreen() {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Password</Text>
         <TextInput
-          value={password}
+          value={Password}
           onChangeText={setPassword}
-          placeholder="Masukkan password Anda"
+          placeholder="Masukkan Password Anda"
           placeholderTextColor="#A9A9A9"
           style={styles.input}
           secureTextEntry

@@ -1,10 +1,10 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { MMKV } from 'react-native-mmkv';
 import { colors, container, spacing, typography } from './theme';
 
-const storage = new MMKV();
+// Hapus deklarasi MMKV storage karena kita pakai AsyncStorage sekarang
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -39,7 +39,8 @@ export default function SignUpScreen() {
 
       if (response.ok) {
         if (data.token) {
-          storage.set('token', data.token);
+          // Menggunakan AsyncStorage untuk menyimpan token secara async
+          await AsyncStorage.setItem('token', data.token);
           router.push('/home');
         } else {
           Alert.alert('Error', 'Token tidak ditemukan pada response');
@@ -54,7 +55,6 @@ export default function SignUpScreen() {
       setLoading(false);
     }
   };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
