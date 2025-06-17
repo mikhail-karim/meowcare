@@ -9,10 +9,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import api from "../../api/api";
 import { ArticleCard } from "../../components/ArticleCard";
 import { Article } from "../../components/types";
 import { container, spacing, typography } from "../theme";
-import api from "../../api/api";
 
 export default function ArticleScreen() {
   const router = useRouter();
@@ -71,7 +71,7 @@ export default function ArticleScreen() {
           <Text style={styles.bannerTitle}>Pahami pentingnya sterilisasi</Text>
           <TouchableOpacity
             style={styles.bannerButton}
-            onPress={() => router.push("/artikel-detail")}
+            onPress={() => router.push("../sterilisasi")}
           >
             <Text style={styles.bannerButtonText}>Pelajari</Text>
           </TouchableOpacity>
