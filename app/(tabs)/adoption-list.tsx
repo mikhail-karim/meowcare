@@ -249,7 +249,7 @@ export default function AdoptionListScreen() {
         {/* Tombol Tambah Kucing sekarang di bawah daftar */}
         <TouchableOpacity
           style={styles.addButtonBelow}
-          onPress={() => router.push('/add-kucing-form')}
+          onPress={() => router.push('../add-kucing-form')}
         >
           <Ionicons name="add-circle-outline" size={24} color="white" />
           <Text style={styles.addButtonText}>Tambah Kucing</Text>

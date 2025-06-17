@@ -144,7 +144,7 @@ export default function EdukasiDetailScreen() {
           </View>
 
           <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/artikel-edit")}>
+            <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/edit-artikel-admin")}>
                 <Ionicons name="create-outline" size={16} color="#2563EB" />
                 <Text style={[styles.actionText, { color: "#2563EB" }]}>Edit</Text>
             </TouchableOpacity>
