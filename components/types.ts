@@ -1,4 +1,3 @@
-
 export type Pet = {
   id: number;
   name: string;
@@ -6,10 +5,11 @@ export type Pet = {
   gender: string;
   age: string;
   image: any;
-  vaccinated: boolean;
-  sterilized: boolean;
-  breed: string;
-  color: string;
+  vaccinated?: boolean;
+  sterilized?: boolean;
+  breed?: string;
+  color?: string;
+  status?: 'Tersedia' | 'Diadopsi' | 'Pending'; 
 };
 
 export type Article = {

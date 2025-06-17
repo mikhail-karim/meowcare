@@ -24,7 +24,7 @@ export default function ArticleScreen() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const token = "your_jwt_token"; // ganti dengan token asli, atau ambil dari state/context
+        const token = "your_jwt_token"; 
         const response = await api.get("/artikel", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -63,12 +63,12 @@ export default function ArticleScreen() {
         >
           <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edukasi</Text>
+        <Text style={styles.headerTitle}>Artikel</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.bannerCard}>
-          <Text style={styles.bannerTitle}>Pahami pentingnya steriliasi</Text>
+          <Text style={styles.bannerTitle}>Pahami pentingnya sterilisasi</Text>
           <TouchableOpacity
             style={styles.bannerButton}
             onPress={() => router.push("/artikel-detail")}
