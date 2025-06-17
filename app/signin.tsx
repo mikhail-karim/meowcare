@@ -10,6 +10,8 @@ export default function SignInScreen() {
   const [Email, setEmail] = useState('');
   const [Password, setPassword] = useState('');
 
+  const API_BASE_URL = 'http://192.168.1.154:8000';
+
   const handleSignIn = async () => {
     if (!Email || !Password) {
       Alert.alert('Error', 'Mohon masukkan Email dan Password');
@@ -17,7 +19,7 @@ export default function SignInScreen() {
     }
 
     try {
-      const response = await axios.post('http://192.168.1.154:8000/users/login', {
+      const response = await axios.post(`${API_BASE_URL}/users/login`, {
         Email,
         Password,
       });
