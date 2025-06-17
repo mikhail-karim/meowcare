@@ -5,17 +5,17 @@ import * as Location from 'expo-location'
 import { useFocusEffect, useNavigation, useRouter } from "expo-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native"
 import { container, spacing, typography } from '../theme'
 
@@ -312,14 +312,32 @@ export default function LaporanScreen() {
             {/* Jenis Kelamin Input */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Jenis Kelamin</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Masukkan Jenis Kelamin Kucing"
-                value={formData.jeniskelamin}
-                onChangeText={(text) => setFormData({ ...formData, jeniskelamin: text })}
-                placeholderTextColor="#94A3B8"
-                keyboardType="phone-pad"
-              />
+              <View style={styles.genderContainer}>
+                <TouchableOpacity 
+                  style={[
+                    styles.genderButton,
+                    formData.jeniskelamin === 'Laki-laki' && styles.genderButtonActive
+                  ]}
+                  onPress={() => setFormData({ ...formData, jeniskelamin: 'Laki-laki' })}
+                >
+                  <Text style={[
+                    styles.genderButtonText,
+                    formData.jeniskelamin === 'Laki-laki' && styles.genderButtonTextActive
+                  ]}>Laki-laki</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[
+                    styles.genderButton,
+                    formData.jeniskelamin === 'Perempuan' && styles.genderButtonActive
+                  ]}
+                  onPress={() => setFormData({ ...formData, jeniskelamin: 'Perempuan' })}
+                >
+                  <Text style={[
+                    styles.genderButtonText,
+                    formData.jeniskelamin === 'Perempuan' && styles.genderButtonTextActive
+                  ]}>Perempuan</Text>
+                </TouchableOpacity>
+              </View>
             </View>
             
             {/* Umur Kucing Input */}
@@ -547,6 +565,29 @@ const styles = StyleSheet.create({
   },
   homeButtonText: {
     ...typography.body.medium.semiBold,
+    color: '#fff',
+  },
+  genderContainer: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  genderButton: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    borderRadius: 30,
+    padding: spacing.md,
+    alignItems: 'center',
+  },
+  genderButtonActive: {
+    backgroundColor: '#222E3A',
+    borderColor: '#222E3A',
+  },
+  genderButtonText: {
+    ...typography.body.medium.regular,
+    color: '#222',
+  },
+  genderButtonTextActive: {
     color: '#fff',
   },
 }) 

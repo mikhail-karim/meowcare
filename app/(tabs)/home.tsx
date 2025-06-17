@@ -52,7 +52,7 @@ export default function HomeScreen() {
 
   const handleWhatsAppRedirect = () => {
     // TODO: Replace with actual WhatsApp number
-    Linking.openURL('https://wa.me/6282228294844')
+    Linking.openURL('https://wa.me/6285233338292')
   }
 
   const handleCopyAccountNumber = async () => {
