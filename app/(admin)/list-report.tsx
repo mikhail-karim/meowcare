@@ -1,15 +1,17 @@
-// app/list-report.tsx
+// app/(admin)/list-report.tsx
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { PetCard } from "../../components/PetCard";
 import { Pet } from "../../components/types";
@@ -24,47 +26,43 @@ export default function AdoptionListScreen() {
   const [acceptedCatIds, setAcceptedCatIds] = useState<number[]>([]);
   const [rejectedCatIds, setRejectedCatIds] = useState<number[]>([]);
 
+  const API_BASE_URL = 'http://192.168.51.109:8000';
+
   useEffect(() => {
-    const mockCats: Pet[] = [
-      {
-        id: 1,
-        name: "Wili",
-        location: "Wonokromo, Surabaya",
-        gender: "Laki-laki",
-        age: "1 Tahun",
-        image: require("../../assets/images/cats/wili.png"),
-        vaccinated: true,
-        sterilized: true,
-        breed: "Domestik",
-        color: "Hitam-Putih",
-      },
-      {
-        id: 2,
-        name: "Oyen",
-        location: "Rungkut, Surabaya",
-        gender: "Laki-laki",
-        age: "3 Tahun",
-        image: require("../../assets/images/cats/oyen.png"),
-        vaccinated: true,
-        sterilized: false,
-        breed: "Persia",
-        color: "Oranye",
-      },
-      {
-        id: 3,
-        name: "Bonie",
-        location: "Darmo, Surabaya",
-        gender: "Laki-laki",
-        age: "5 Tahun",
-        image: require("../../assets/images/cats/bonie.png"),
-        vaccinated: false,
-        sterilized: true,
-        breed: "Angora",
-        color: "Abu-abu",
-      },
-    ];
-    setCats(mockCats);
+    fetchCats();
   }, []);
+
+  const fetchCats = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.warn("Token tidak ditemukan.");
+        return;
+      }
+
+      const response = await axios.get(`${API_BASE_URL}/report/listreport`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const reports = response.data.data;
+
+      const mappedCats: Pet[] = reports.map((item: any) => ({
+        id: item.Report_ID,
+        name: item.user?.Nama_Lengkap || 'Tanpa Nama',
+        image: `${API_BASE_URL}/${item.Foto}`,
+        location: item.user?.Alamat || 'Lokasi tidak diketahui',
+        gender: 'Laki-laki', // default
+        age: '1 Tahun', // default
+        description: item.Deskripsi
+      }));
+
+      setCats(mappedCats);
+    } catch (error) {
+      console.error("Gagal mengambil data kucing:", error);
+    }
+  };
 
   const handleAccept = (id: number) => {
     setAcceptedCatIds((prev) => [...prev, id]);
@@ -182,12 +180,8 @@ export default function AdoptionListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    ...container.screen,
-  },
-  header: {
-    ...container.header,
-  },
+  container: { ...container.screen },
+  header: { ...container.header },
   backButton: {
     position: "absolute",
     left: spacing.lg,
@@ -205,9 +199,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     textAlign: "center",
   },
-  content: {
-    ...container.content,
-  },
+  content: { ...container.content },
   catList: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
@@ -241,8 +233,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 12,
   },
-
-  // MODAL
   modalContainer: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.3)",

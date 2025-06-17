@@ -21,6 +21,17 @@ class ReportController extends Controller
         return response()->json($reports, 200);
     }
 
+    public function allreport()
+    {
+        $reports = Report::with('user')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'List semua laporan',
+            'data' => $reports
+        ], 200);
+    }
+
     // Menampilkan detail report
     public function show($id)
     {
