@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors, container, spacing, typography } from './theme';
 
-// Hapus deklarasi MMKV storage karena kita pakai AsyncStorage sekarang
+const API_BASE_URL = 'http://192.168.1.154:8000'; // Global base URL yang sama seperti di SignInScreen
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -22,39 +23,33 @@ export default function SignUpScreen() {
     }
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          Nama_Lengkap: fullName,
-          Username: username,
-          Email: email,
-          Password: password,
-        }),
+      const response = await axios.post(`${API_BASE_URL}/users/register`, {
+        Nama_Lengkap: fullName,
+        Username: username,
+        Email: email,
+        Password: password,
       });
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
-        if (data.token) {
-          // Menggunakan AsyncStorage untuk menyimpan token secara async
-          await AsyncStorage.setItem('token', data.token);
-          router.push('/home');
-        } else {
-          Alert.alert('Error', 'Token tidak ditemukan pada response');
-        }
+      if (data.token) {
+        await AsyncStorage.setItem('token', data.token);
+        router.push('/home');
       } else {
-        Alert.alert('Error', data.message || 'Gagal melakukan registrasi');
+        Alert.alert('Error', 'Token tidak ditemukan pada response');
       }
     } catch (error) {
-      Alert.alert('Error', 'Terjadi kesalahan jaringan atau server');
+      if (axios.isAxiosError(error)) {
+        Alert.alert('Error', error.response?.data?.message || 'Gagal melakukan registrasi');
+      } else {
+        Alert.alert('Error', 'Terjadi kesalahan jaringan atau server');
+      }
       console.error('SignUp error: ', error);
     } finally {
       setLoading(false);
     }
   };
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
