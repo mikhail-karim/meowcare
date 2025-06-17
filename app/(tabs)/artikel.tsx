@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -12,21 +12,33 @@ import {
 import { ArticleCard } from "../../components/ArticleCard";
 import { Article } from "../../components/types";
 import { container, spacing, typography } from "../theme";
+import api from "../../api/api";
 
-export default function EdukasiScreen() {
+export default function ArticleScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("View all");
+  const [articles, setArticles] = useState<Article[]>([]);
 
   const tabs = ["View all", "Edukasi", "Kegiatan"];
 
-  const articles: Article[] = Array(4).fill({
-    title: "Judul Artikel",
-    category: "Kegiatan",
-    author: "KPTKS",
-    image: require("../../assets/images/cats/oyen.png"),
-  });
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const token = "your_jwt_token"; // ganti dengan token asli, atau ambil dari state/context
+        const response = await api.get("/artikel", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setArticles(response.data);
+      } catch (error) {
+        console.error("Error fetching articles:", error);
+      }
+    };
 
-  // Opsional: filter artikel berdasarkan kategori aktif
+    fetchArticles();
+  }, []);
+
   const filteredArticles =
     activeTab === "View all"
       ? articles
@@ -44,7 +56,6 @@ export default function EdukasiScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -56,7 +67,6 @@ export default function EdukasiScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Banner Edukasi */}
         <View style={styles.bannerCard}>
           <Text style={styles.bannerTitle}>Pahami pentingnya steriliasi</Text>
           <TouchableOpacity
@@ -67,7 +77,6 @@ export default function EdukasiScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Tab Filter */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -91,7 +100,6 @@ export default function EdukasiScreen() {
           })}
         </ScrollView>
 
-        {/* Article List */}
         <View style={styles.articleList}>
           {filteredArticles.map(renderArticleCard)}
         </View>
