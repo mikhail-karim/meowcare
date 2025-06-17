@@ -10,6 +10,11 @@ export default function HomeScreen() {
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false)
   const [showCopyFeedback, setShowCopyFeedback] = useState(false)
 
+  const handleProfilePress = () => {
+  setIsProfileModalVisible(false);
+  router.push('../profil'); 
+  };
+
   const handleLogout = () => {
     Alert.alert(
       "Logout",
@@ -99,6 +104,16 @@ export default function HomeScreen() {
           onPress={() => setIsProfileModalVisible(false)}
         >
           <View style={styles.modalContent}>
+            {/* Tombol Profil Saya */}
+            <TouchableOpacity 
+              style={styles.modalItem}
+              onPress={handleProfilePress} 
+            >
+              <Ionicons name="person-outline" size={20} color="#000000" />
+              <Text style={[styles.modalItemText, { color: '#000000' }]}>Profil Saya</Text>
+            </TouchableOpacity>
+
+            {/* Tombol Logout */}
             <TouchableOpacity 
               style={styles.modalItem}
               onPress={handleLogout}
@@ -142,7 +157,7 @@ export default function HomeScreen() {
 
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/(tabs)/edukasi')}
+              onPress={() => router.push('/(tabs)/artikel')}
             >
               <View style={styles.actionIcon}>
                 <Ionicons name="book-outline" size={24} color="#fff" />
@@ -230,7 +245,7 @@ export default function HomeScreen() {
 
                 <TouchableOpacity 
                   style={[styles.sterilizationButton, styles.secondaryButton]}
-                  onPress={() => router.push('/(tabs)/edukasi')}
+                  onPress={() => router.push('/(tabs)/artikel')}
                 >
                   <Text style={styles.secondaryButtonText}>Pelajari Manfaat Steril</Text>
                 </TouchableOpacity>

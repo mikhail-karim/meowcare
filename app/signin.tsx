@@ -10,7 +10,7 @@ export default function SignInScreen() {
   const [Email, setEmail] = useState('');
   const [Password, setPassword] = useState('');
 
-  const API_BASE_URL = 'http://192.168.1.154:8000';
+  const API_BASE_URL = 'http://192.168.43.232:8000';
 
   const handleSignIn = async () => {
     if (!Email || !Password) {
