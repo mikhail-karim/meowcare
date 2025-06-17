@@ -1,14 +1,19 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors, container, spacing, typography } from './theme';
 
+const API_BASE_URL = 'http://192.168.94.249:8000'
+
 export default function ResetPasswordScreen() {
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (!password || !confirmPassword) {
       Alert.alert('Error', 'Mohon isi semua field');
       return;
@@ -17,9 +22,35 @@ export default function ResetPasswordScreen() {
       Alert.alert('Error', 'Password tidak sama');
       return;
     }
-    // TODO: Integrasi reset password
-    Alert.alert('Berhasil', 'Password berhasil direset.');
-    router.push('/signin');
+
+    setLoading(true);
+    try {
+      const email = await AsyncStorage.getItem('userEmail');
+      if (!email) {
+        setLoading(false);
+        Alert.alert('Error', 'Email tidak ditemukan. Mohon ulangi proses lupa password.');
+        return;
+      }
+
+      const response = await axios.put(`${API_BASE_URL}/users/forget_password`, {
+        Email: email,
+        New_Password: password,
+      });
+
+      setLoading(false);
+
+      // Bisa modifikasi sesuai response API Anda
+      if (response.status === 200) {
+        Alert.alert('Berhasil', 'Password berhasil direset.');
+        router.push('/signin');
+      } else {
+        Alert.alert('Error', 'Gagal mereset password. Silakan coba lagi.');
+      }
+    } catch (error) {
+      setLoading(false);
+      Alert.alert('Error', 'Terjadi kesalahan saat mereset password.');
+      console.error('Reset password error:', error);
+    }
   };
 
   return (
@@ -48,8 +79,8 @@ export default function ResetPasswordScreen() {
         />
       </View>
       <View style={styles.buttonWrapper}>
-        <TouchableOpacity style={styles.button} onPress={handleReset}>
-          <Text style={styles.buttonText}>Reset</Text>
+        <TouchableOpacity style={styles.button} onPress={handleReset} disabled={loading}>
+          <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Reset'}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -100,4 +131,4 @@ const styles = StyleSheet.create({
     ...typography.body.medium.semiBold,
     color: colors.background,
   },
-}); 
+});

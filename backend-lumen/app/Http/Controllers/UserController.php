@@ -235,4 +235,26 @@ class UserController extends Controller
         $user->delete();
         return response()->json(['message' => 'User deleted']);
     }
+
+    public function forgetPassword(Request $request)
+    {
+        // Validasi email dan password baru
+        $validator = Validator::make($request->all(), [
+            'Email' => 'required|email|exists:users,Email',
+            'New_Password' => 'required|string|min:6|confirmed',
+        ]);
+
+        // Cari user berdasarkan email
+        $user = User::where('Email', $request->Email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        // Update password baru (hash dulu)
+        $user->Password = Hash::make($request->New_Password);
+        $user->save();
+
+        return response()->json(['message' => 'Password updated successfully']);
+    }
 }

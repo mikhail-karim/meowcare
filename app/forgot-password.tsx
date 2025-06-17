@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -8,14 +9,20 @@ export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (email) {
       setLoading(true);
-      setTimeout(() => {
+      try {
+        await AsyncStorage.setItem('userEmail', email);  // Simpan email ke local storage
+        setTimeout(() => {
+          setLoading(false);
+          Alert.alert('Berhasil', 'Instruksi reset password telah dikirim ke email Anda.');
+          router.push('/reset-password');
+        }, 1500);
+      } catch (error) {
         setLoading(false);
-        Alert.alert('Berhasil', 'Instruksi reset password telah dikirim ke email Anda.');
-        router.push('/reset-password');
-      }, 1500);
+        Alert.alert('Error', 'Gagal menyimpan email.');
+      }
     } else {
       Alert.alert('Error', 'Mohon masukkan email Anda');
     }
