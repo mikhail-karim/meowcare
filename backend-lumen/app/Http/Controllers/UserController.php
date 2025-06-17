@@ -74,20 +74,39 @@ class UserController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('Email', 'Password');
-        $token = auth('user')->attempt([
-            'Email' => $credentials['Email'],
-            'password' => $credentials['Password']
-        ]);
+        $email = $credentials['Email'];
 
-        if (!$token) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+        if ($email === 'admin@admin.com') {
+            // Login sebagai admin
+            $token = auth('admin')->attempt([
+                'Email' => $email,
+                'password' => $credentials['Password']
+            ]);
+
+            if (!$token) {
+                return response()->json(['message' => 'Invalid admin credentials'], 401);
+            }
+
+            $admin = auth('admin')->user();
+            $token = JWTAuth::fromUser($admin, ['role' => 'admin']);
+
+            return response()->json(['token' => $token, 'admin' => $admin]);
+        } else {
+            // Login sebagai user biasa
+            $token = auth('user')->attempt([
+                'Email' => $email,
+                'password' => $credentials['Password']
+            ]);
+
+            if (!$token) {
+                return response()->json(['message' => 'Invalid user credentials'], 401);
+            }
+
+            $user = auth('user')->user();
+            $token = JWTAuth::fromUser($user, ['role' => 'user']);
+
+            return response()->json(['token' => $token, 'user' => $user]);
         }
-
-        $user = auth('user')->user();
-        $customClaims = ['role' => 'user'];
-        $token = JWTAuth::fromUser($user, $customClaims);
-
-        return response()->json(['token' => $token, 'user' => $user]);
     }
 
     public function logout(Request $request)

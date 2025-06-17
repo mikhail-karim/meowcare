@@ -1,7 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { MMKV } from 'react-native-mmkv';
 import { colors, container, spacing, typography } from './theme';
+
+// Inisialisasi instance MMKV
+const storage = new MMKV();
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -9,13 +13,41 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSignIn = () => {
-    // TODO: Integrasi autentikasi
-    if (email && password) {
-      console.log('Logging in with:', email, password);
-      router.push('/home'); 
-    } else {
+  const handleSignIn = async () => {
+    if (!email || !password) {
       Alert.alert('Error', 'Mohon masukkan email dan password');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8000/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        Alert.alert('Login Failed', errorData.message || 'Gagal login, periksa kembali email dan password Anda.');
+        return;
+      }
+
+      const data = await response.json();
+
+      // Simpan token di local storage menggunakan MMKV
+      storage.set('token', data.token);
+
+      // Navigate berdasarkan email admin
+      if (email.toLowerCase() === 'admin@admin.com') {
+        router.push('/(admin)/dashboard-admin');
+      } else {
+        router.push('/home');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Terjadi kesalahan jaringan. Silakan coba lagi.');
+      console.error('Login error:', error);
     }
   };
 
@@ -111,7 +143,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     borderRadius: 32,
     alignItems: 'center',
-    width: 150, 
+    width: 150,
   },
   buttonText: {
     ...typography.body.medium.semiBold,
@@ -130,4 +162,4 @@ const styles = StyleSheet.create({
     ...typography.body.medium.semiBold,
     color: colors.primary,
   },
-}); 
+});
