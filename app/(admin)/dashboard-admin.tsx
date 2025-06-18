@@ -2,16 +2,16 @@ import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icon
 import { useRouter } from "expo-router"
 import { useEffect, useState } from "react"
 import {
-  Alert,
-  Image,
-  Modal,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Alert,
+    Image,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native"
 import { PetCard } from '../../components/PetCard'
 import { Pet } from '../../components/types'
@@ -63,40 +63,43 @@ export default function AdoptionListScreen() {
     // Simulasi data kucing dari API
     const mockCats: Pet[] = [
       {
-        id: 1,
-        name: "Wili",
-        location: "Wonokromo, Surabaya",
-        gender: "Laki-laki",
-        age: "1 Tahun",
-        image: require('../../assets/images/cats/wili.png'),
-        vaccinated: true,
-        sterilized: true,
-        breed: "Domestik",
-        color: "Hitam-Putih"
+          id: 1,
+          name: "Wili",
+          location: "Wonokromo, Surabaya",
+          gender: "Laki-laki",
+          age: "1 Tahun",
+          image: require('../../assets/images/cats/wili.png'),
+          vaccinated: true,
+          sterilized: true,
+          breed: "Domestik",
+          color: "Hitam-Putih",
+          owner: 0
       },
       {
-        id: 2,
-        name: "Oyen",
-        location: "Rungkut, Surabaya",
-        gender: "Laki-laki",
-        age: "3 Tahun",
-        image: require('../../assets/images/cats/oyen.png'),
-        vaccinated: true,
-        sterilized: false,
-        breed: "Persia",
-        color: "Oranye"
+          id: 2,
+          name: "Oyen",
+          location: "Rungkut, Surabaya",
+          gender: "Laki-laki",
+          age: "3 Tahun",
+          image: require('../../assets/images/cats/oyen.png'),
+          vaccinated: true,
+          sterilized: false,
+          breed: "Persia",
+          color: "Oranye",
+          owner: 0
       },
       {
-        id: 3,
-        name: "Bonie",
-        location: "Darmo, Surabaya",
-        gender: "Laki-laki",
-        age: "5 Tahun",
-        image: require('../../assets/images/cats/bonie.png'),
-        vaccinated: false,
-        sterilized: true,
-        breed: "Angora",
-        color: "Abu-abu"
+          id: 3,
+          name: "Bonie",
+          location: "Darmo, Surabaya",
+          gender: "Laki-laki",
+          age: "5 Tahun",
+          image: require('../../assets/images/cats/bonie.png'),
+          vaccinated: false,
+          sterilized: true,
+          breed: "Angora",
+          color: "Abu-abu",
+          owner: 0
       },
     ]
 
@@ -530,6 +533,9 @@ export default function AdoptionListScreen() {
                             satria@gmail.com
                         </Text>
                     </View>
+                    <TouchableOpacity style={{ margin: 35 }} onPress={() => router.push("/ubah-profil-admin")}>
+                        <Ionicons name="create-outline" size={24} color="#1E293B" />
+                    </TouchableOpacity>
                 </View>
             </View>
         </View>
