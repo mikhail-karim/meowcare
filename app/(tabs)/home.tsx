@@ -1,11 +1,12 @@
-import { Ionicons } from "@expo/vector-icons"
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import * as Clipboard from 'expo-clipboard'
-import { useRouter } from "expo-router"
-import LottieView from 'lottie-react-native'
-import { useEffect, useRef, useState } from "react"
-import { Alert, Image, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import { colors, container, typography } from '../theme'
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import * as Clipboard from 'expo-clipboard';
+import { useRouter } from "expo-router";
+import LottieView from 'lottie-react-native';
+import { useEffect, useRef, useState } from "react";
+import { Image, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { colors, container, typography } from '../theme';
 
 export default function HomeScreen() {
   const router = useRouter()
@@ -29,26 +30,29 @@ export default function HomeScreen() {
   router.push('../profil'); 
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Logout",
-          onPress: () => {
-            // TODO: Implement logout logic here
-            router.replace('/signin')
-          },
-          style: "destructive"
-        }
-      ]
-    )
+  const handleLogout = async () => {
+  try {
+    console.log('Logout process started');
+    const token = await AsyncStorage.getItem('token');
+    if (!token) throw new Error('Token not found');
+
+    // Panggil API logout dengan header Authorization Bearer token
+    await axios.post(`${API_BASE_URL}/users/logout`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // Bersihkan semua data di local storage
+    await AsyncStorage.clear();
+
+    console.log('Logout success, navigating to signin');
+    // Pindah ke halaman index atau signin
+    router.replace('/welcome');
+  } catch (error: unknown) {
+    console.error('Logout error:', error);
+    // Anda bisa tambahkan UI feedback error sesuai kebutuhan Anda di sini
   }
+};
+
 
   const handleWhatsAppRedirect = () => {
     // TODO: Replace with actual WhatsApp number
