@@ -62,47 +62,57 @@ export default function AddArticleForm() {
     }, [])
    )
 
-const handleSubmit = async () => {
-  if (!judul || !artikel) {
-    Alert.alert('Judul dan Artikel wajib diisi!');
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    const token = await AsyncStorage.getItem('token'); // Pastikan token tersimpan dengan key ini
-    if (!token) {
-      Alert.alert('Token tidak ditemukan. Silakan login kembali.');
+  const handleSubmit = async () => {
+    if (!judul || !artikel) {
+      Alert.alert('Judul dan Artikel wajib diisi!');
       return;
     }
 
-    const formPayload = {
-      Judul: judul,
-      Kategori: kategori,
-      Artikel: artikel,
-      Thumbnail: thumbnail?.uri ?? null,
-    };
+    setIsSubmitting(true);
 
-    await axios.post(`${API_BASE_URL}/artikel`, formPayload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert('Token tidak ditemukan. Silakan login kembali.');
+        return;
+      }
 
-    setShowSuccess(true);
-    Alert.alert('Artikel berhasil ditambahkan!');
-    resetForm();
-    router.push('/(admin)/article-admin'); // Kembali ke halaman artikel admin
-  } catch (error: any) {
-    console.error('Gagal submit artikel:', error?.response?.data || error.message);
-    Alert.alert('Gagal menambahkan artikel. Periksa koneksi atau input Anda.');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      const formData = new FormData();
+
+      formData.append('Judul', judul);
+      formData.append('Kategori', kategori);
+      formData.append('Artikel', artikel);
+
+      if (thumbnail) {
+        const uriParts = thumbnail.uri.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+
+        formData.append('Thumbnail', {
+          uri: thumbnail.uri,
+          name: `thumbnail.${fileType}`,
+          type: `image/${fileType}`,
+        } as any);
+      }
+
+      await axios.post(`${API_BASE_URL}/artikel`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+        },
+      });
+
+      setShowSuccess(true);
+      Alert.alert('Artikel berhasil ditambahkan!');
+      resetForm();
+      router.push('/(admin)/article-admin');
+    } catch (error: any) {
+      console.error('Gagal submit artikel:', error?.response?.data || error.message);
+      Alert.alert('Gagal menambahkan artikel. Periksa koneksi atau input Anda.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
 
   useEffect(() => {
