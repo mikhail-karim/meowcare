@@ -23,7 +23,9 @@ class ReportController extends Controller
 
     public function allreport()
     {
-        $reports = Report::with('user')->get();
+        $reports = Report::where('Rescued', false)
+                        ->with('user')
+                        ->get();
 
         return response()->json([
             'success' => true,
@@ -31,6 +33,7 @@ class ReportController extends Controller
             'data' => $reports
         ], 200);
     }
+
 
     // Menampilkan detail report
     public function show($id)
@@ -153,12 +156,6 @@ class ReportController extends Controller
         if (!$report) {
             return response()->json(['message' => 'Report not found'], 404);
         }
-
-        // Pastikan hanya user pemilik yang bisa hapus
-        if ($report->User_ID !== Auth::user()->User_ID) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         $report->delete();
 
         return response()->json(['message' => 'Report deleted'], 200);
@@ -175,6 +172,7 @@ class ReportController extends Controller
     public function getNotRescued()
     {
         $reports = Report::where('Rescued', false)->get();
+        $reports = Report::with('user')->get();
         return response()->json($reports, 200);
     }
 
@@ -182,7 +180,7 @@ class ReportController extends Controller
     public function getByUserId($userId)
     {
         $reports = Report::where('User_ID', $userId)
-            ->with('user') // Include relasi user
+            ->with('user')
             ->get();
 
         return response()->json([

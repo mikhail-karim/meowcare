@@ -3,14 +3,13 @@ import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { API_BASE_URL } from '../components/types';
 import { colors, container, spacing, typography } from './theme';
 
 export default function SignInScreen() {
   const router = useRouter();
   const [Email, setEmail] = useState('');
   const [Password, setPassword] = useState('');
-
-  const API_BASE_URL = 'http://192.168.0.108:8000';
 
   const handleSignIn = async () => {
     if (!Email || !Password) {

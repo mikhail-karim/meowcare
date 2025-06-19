@@ -17,7 +17,7 @@ import { PetCard } from '../../components/PetCard';
 import { Pet } from '../../components/types';
 import { colors, container, spacing, typography } from '../theme';
 
-const API_BASE_URL = 'http://192.168.0.108:8000';
+import { API_BASE_URL } from '../../components/types';
 
 export default function AdoptionListScreen() {
   const router = useRouter();

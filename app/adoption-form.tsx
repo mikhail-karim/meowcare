@@ -16,7 +16,7 @@ import {
 import { Pet } from '../components/types';
 import { typography } from './theme';
 
-const API_BASE_URL = 'http://192.168.0.108:8000';
+import { API_BASE_URL } from '../components/types';
 
 export default function AdoptionFormScreen() {
   
@@ -120,7 +120,7 @@ export default function AdoptionFormScreen() {
     if (step === 1) router.back()
     else setStep(step - 1)
   }
-  
+
   const handleSubmit = async () => {
     try {
       const token = await AsyncStorage.getItem('token');

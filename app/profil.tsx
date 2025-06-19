@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { AgeIcon, GenderIcon, LocationIcon } from "../components/Icons";
+import { API_BASE_URL } from '../components/types';
 import { container, spacing, typography } from "./theme";
 
 const STATUS_COLORS: { [key: string]: string } = {
@@ -49,7 +50,6 @@ const REPORT_TEXT_COLORS: { [key: string]: string } = {
 
 
 export default function ProfilScreen() {
-  const API_BASE_URL = 'http://192.168.0.108:8000';
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("Kucingku");
   

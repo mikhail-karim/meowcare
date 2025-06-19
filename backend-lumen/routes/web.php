@@ -172,6 +172,7 @@ $router->group(['prefix' => 'report'], function () use ($router) {
     
     $router->group(['middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
         $router->put('/rescued/{reportId}', 'ReportController@updateRescuedStatus');
+        $router->delete('/{id}', 'ReportController@destroy');
     });
     
     $router->get('/{id}', 'ReportController@show');
@@ -179,7 +180,6 @@ $router->group(['prefix' => 'report'], function () use ($router) {
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
         $router->post('/', 'ReportController@store');
         $router->put('/{id}', 'ReportController@update');
-        $router->delete('/{id}', 'ReportController@destroy');
     });
 });
 

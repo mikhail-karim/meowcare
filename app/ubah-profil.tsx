@@ -8,11 +8,11 @@ import { container, spacing, typography } from "./theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
+import { API_BASE_URL } from '../components/types';
 
 export default function EditProfilScreen() {
   const router = useRouter();
 
-  const API_BASE_URL = 'http://192.168.0.108:8000';
 
   const [name, setName] = useState("Satria");
   const [username, setUsername] = useState("");

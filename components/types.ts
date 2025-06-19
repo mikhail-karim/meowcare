@@ -9,7 +9,8 @@ export type Pet = {
   sterilized?: boolean;
   breed?: string;
   color?: string;
-  status?: 'Tersedia' | 'Diadopsi' | 'Pending'; 
+  status?: string;
+  description?: string; 
   owner: number;
 };
 
@@ -21,5 +22,4 @@ export type Article = {
   image: any;
 };
 
-
-
+export const API_BASE_URL = 'http://192.168.0.108:8000';

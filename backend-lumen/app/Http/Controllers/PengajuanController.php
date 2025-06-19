@@ -10,7 +10,9 @@ class PengajuanController extends Controller
 {
     public function index()
     {
-        return Pengajuan::with(['user', 'pet'])->get();
+        return Pengajuan::with(['user', 'pet'])
+                    ->where('Approved', 0) // Filter hanya yang Approved = false / 0
+                    ->get();
     }
 
     public function show($id)

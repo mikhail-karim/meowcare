@@ -13,7 +13,8 @@ class PetController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pet::with(['ras', 'warna', 'user']);
+        $query = Pet::with(['ras', 'warna', 'user'])
+                    ->where('Adopted', 0); // Filter pets dengan Adopted = 0 atau false
 
         if ($request->has('search')) {
             $query->where('Nama', 'like', '%' . $request->search . '%');
@@ -21,6 +22,7 @@ class PetController extends Controller
 
         return response()->json($query->get());
     }
+
 
     public function show($id)
     {

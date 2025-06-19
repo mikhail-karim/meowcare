@@ -1,39 +1,42 @@
 // app/add-kucing-form-admin.tsx
-import { Ionicons } from "@expo/vector-icons"
-import * as ImagePicker from 'expo-image-picker'
-import * as Location from 'expo-location'
-import { useFocusEffect, useNavigation, useRouter } from "expo-router"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Picker } from '@react-native-picker/picker';
+import axios from 'axios';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
+import { useFocusEffect, useNavigation, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
-} from "react-native"
-import { container, spacing, typography } from '../theme'
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { API_BASE_URL } from '../../components/types';
+import { container, spacing, typography } from '../theme';
 
 export default function LaporanScreen() {
+  const [rasList, setRasList] = useState<string[]>([]);
+  const [warnaList, setWarnaList] = useState<string[]>([]);
   const router = useRouter()
   const navigation = useNavigation()
   const initialFormState = {
-    name:'',
-    nomortelepon:'',
-    email:'',
-    location: '',
-    jeniskelamin:'',
-    umur:'',
-    ras:'',
-    warna:'',
-    description: '',
+    name: '',
+    umur: '',
+    jeniskelamin: '',
+    ras: '',
+    warna: '',
     image: null as string | null,
   }
+
   const [formData, setFormData] = useState(initialFormState)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -48,6 +51,23 @@ export default function LaporanScreen() {
     fadeAnim.setValue(0)
     scaleAnim.setValue(0)
   }, [])
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const rasResponse = await axios.get(`${API_BASE_URL}/ras`);
+        const warnaResponse = await axios.get(`${API_BASE_URL}/warna`);
+
+        setRasList(rasResponse.data.map((item: any) => item.Nama));
+        setWarnaList(warnaResponse.data.map((item: any) => item.Nama));
+      } catch (error) {
+        console.error("Gagal mengambil data ras/warna:", error);
+      }
+    };
+
+    fetchOptions();
+  }, []);
+
 
   // Reset form when component mounts
   useEffect(() => {
@@ -82,43 +102,7 @@ export default function LaporanScreen() {
     })()
   }, [])
 
-  const getCurrentLocation = async () => {
-    try {
-      setIsLoadingLocation(true)
-      const { status } = await Location.requestForegroundPermissionsAsync()
-      
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission Denied',
-          'Please allow location access to use this feature.'
-        )
-        return
-      }
-
-      const location = await Location.getCurrentPositionAsync({})
-      const { latitude, longitude } = location.coords
-
-      // Get address from coordinates
-      const [address] = await Location.reverseGeocodeAsync({
-        latitude,
-        longitude
-      })
-
-      if (address) {
-        const locationString = `${address.street}, ${address.city}, ${address.region}`
-        setFormData({ ...formData, location: locationString })
-      }
-    } catch (error) {
-      Alert.alert(
-        'Error',
-        'Could not get your location. Please try again or enter manually.'
-      )
-    } finally {
-      setIsLoadingLocation(false)
-    }
-  }
-
-  const pickImage = async () => {
+const pickImage = async () => {
     // Request permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
     
@@ -139,83 +123,84 @@ export default function LaporanScreen() {
       setFormData({ ...formData, image: result.assets[0].uri })
     }
   }
-
-  const takePhoto = async () => {
-    // Request permission
-    const { status } = await ImagePicker.requestCameraPermissionsAsync()
-    
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Sorry, we need camera permissions to make this work!')
-      return
+  const handleSubmit = async () => {
+    if (!formData.name || !formData.umur || !formData.jeniskelamin || !formData.ras || !formData.warna) {
+      Alert.alert('Peringatan', 'Mohon lengkapi semua data (kecuali foto boleh kosong).');
+      return;
     }
 
-    // Launch camera
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    })
+    try {
+      setIsSubmitting(true);
+      const token = await AsyncStorage.getItem('token');
 
-    if (!result.canceled) {
-      setFormData({ ...formData, image: result.assets[0].uri })
+      const rasId = rasList.findIndex(r => r === formData.ras) + 1;
+      const warnaId = warnaList.findIndex(w => w === formData.warna) + 1;
+
+      const form = new FormData();
+      form.append('Nama', formData.name);
+      form.append('Umur', formData.umur);
+      form.append('Jenis_Kelamin', formData.jeniskelamin);
+      form.append('Ras_ID', rasId.toString());
+      form.append('Warna_ID', warnaId.toString());
+
+      if (formData.image) {
+        const uriParts = formData.image.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+        form.append('Foto', {
+          uri: formData.image,
+          name: `foto-kucing.${fileType}`,
+          type: `image/${fileType}`,
+        } as any);
+      } else {
+        form.append('Foto', '');
+      }
+
+      const response = await axios.post(`${API_BASE_URL}/pets/as-admin`, form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        setShowSuccess(true);
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.spring(scaleAnim, {
+            toValue: 1,
+            friction: 4,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          handleBackToHome();
+        });
+      } else {
+        Alert.alert('Gagal', 'Gagal mengirim data ke server.');
+      }
+    } catch (error: any) {
+      if (error.response) {
+        console.error('Upload error:', error.response.data);
+      } else {
+        console.error('Upload error:', error);
+      }
+      Alert.alert('Gagal', 'Terjadi kesalahan saat mengunggah data.');
+    } finally {
+      setIsSubmitting(false);
     }
-  }
-
-  const showImageOptions = () => {
-    Alert.alert(
-      'Pilih Sumber Gambar',
-      'Dari mana anda ingin mengambil gambar?',
-      [
-        {
-          text: 'Kamera',
-          onPress: takePhoto,
-        },
-        {
-          text: 'Galeri',
-          onPress: pickImage,
-        },
-        {
-          text: 'Batal',
-          style: 'cancel',
-        },
-      ]
-    )
-  }
-
-  const handleSubmit = () => {
-    setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setShowSuccess(true)
-      
-      // Start success animation
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 4,
-          useNativeDriver: true,
-        })
-      ]).start()
-    }, 1000)
-  }
+  };
 
   const handleBackToHome = () => {
-    router.push('/(tabs)/home')
+    router.push('/(admin)/dashboard-admin');
   }
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>Tambahkan Kucing</Text>
       </View>
 
@@ -244,142 +229,80 @@ export default function LaporanScreen() {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.formContainer}>
             <Text style={styles.formTitle}>Klik, sayang, peluk, adopsi meong hari ini juga!</Text>
-            
-            {/* Name Input */}
+            {/* Nama Kucing */}
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Nama Pawrents</Text>
+              <Text style={styles.inputLabel}>Nama Kucing</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Nama Lengkap"
+                placeholder="Masukkan Nama Kucing"
                 value={formData.name}
                 onChangeText={(text) => setFormData({ ...formData, name: text })}
                 placeholderTextColor="#94A3B8"
               />
             </View>
 
-            {/* Number Phone Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Nomor Telepon</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Masukkan Nomor Telepon"
-                value={formData.nomortelepon}
-                onChangeText={(text) => setFormData({ ...formData, nomortelepon: text })}
-                placeholderTextColor="#94A3B8"
-                keyboardType="phone-pad"
-              />
-            </View>
-
-            {/* Email Input
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Masukkan Email"
-                value={formData.email}
-                onChangeText={(text) => setFormData({ ...formData, email: text })}
-                placeholderTextColor="#94A3B8"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View> */}
-
-            {/* Location Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Lokasi</Text>
-              <View style={styles.locationInputContainer}>
-                <TextInput
-                  style={[styles.input, styles.locationInput]}
-                  placeholder="Masukkan lokasi kucing"
-                  value={formData.location}
-                  onChangeText={(text) => setFormData({ ...formData, location: text })}
-                  placeholderTextColor="#94A3B8"
-                />
-                <TouchableOpacity 
-                  style={styles.locationButton}
-                  onPress={getCurrentLocation}
-                  disabled={isLoadingLocation}
-                >
-                  {isLoadingLocation ? (
-                    <ActivityIndicator color="#304153" />
-                  ) : (
-                    <Ionicons name="location" size={24} color="#304153" />
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-            
-            {/* Jenis Kelamin Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Jenis Kelamin</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Masukkan Jenis Kelamin Kucing"
-                value={formData.jeniskelamin}
-                onChangeText={(text) => setFormData({ ...formData, jeniskelamin: text })}
-                placeholderTextColor="#94A3B8"
-                keyboardType="phone-pad"
-              />
-            </View>
-            
-            {/* Umur Kucing Input */}
+            {/* Umur Kucing */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Umur Kucing</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Masukkan Umur Kucing"
+                placeholder="Masukkan angka umur (dalam bulan)"
                 value={formData.umur}
                 onChangeText={(text) => setFormData({ ...formData, umur: text })}
                 placeholderTextColor="#94A3B8"
-                keyboardType="phone-pad"
               />
             </View>
 
-             {/* Ras Kucing Input */}
+            {/* Jenis Kelamin */}
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Ras Kucing</Text>
+              <Text style={styles.inputLabel}>Jenis Kelamin</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Masukkan Ras Kucing"
-                value={formData.ras}
-                onChangeText={(text) => setFormData({ ...formData, ras: text })}
+                placeholder="Laki-laki / Perempuan"
+                value={formData.jeniskelamin}
+                onChangeText={(text) => setFormData({ ...formData, jeniskelamin: text })}
                 placeholderTextColor="#94A3B8"
-                keyboardType="phone-pad"
               />
             </View>
 
-            {/* Warna Kucing Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Warna Kucing</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Masukkan Warna Kucing"
-                value={formData.warna}
-                onChangeText={(text) => setFormData({ ...formData, warna: text })}
-                placeholderTextColor="#94A3B8"
-                keyboardType="phone-pad"
-              />
-            </View>
+          {/* Ras Kucing - Dropdown */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Ras</Text>
+            <Picker
+              selectedValue={formData.ras}
+              onValueChange={(value) => setFormData({ ...formData, ras: value })}
+              style={styles.input}
+            >
+              <Picker.Item label="Pilih Ras" value="" />
+              {Array.isArray(rasList) && rasList.map((ras, index) => (
+                <Picker.Item key={index} label={ras} value={ras} />
+              ))}
+            </Picker>
+          </View>
 
-            {/* Description Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Deskripsi</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                placeholder="Deskripsikan kondisi kucing"
-                value={formData.description}
-                onChangeText={(text) => setFormData({ ...formData, description: text })}
-                placeholderTextColor="#94A3B8"
-                multiline
-                numberOfLines={6}
-                textAlignVertical="top"
-              />
-            </View>
 
-            {/* Image Upload */}
+
+          {/* Warna Kucing - Dropdown */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Warna</Text>
+            <Picker
+              selectedValue={formData.warna}
+              onValueChange={(value) => setFormData({ ...formData, warna: value })}
+              style={styles.input}
+            >
+              <Picker.Item label="Pilih Warna" value="" />
+              {Array.isArray(warnaList) && warnaList.map((warna, index) => (
+                <Picker.Item key={index} label={warna} value={warna} />
+              ))}
+            </Picker>
+          </View>
+
+
+
+            {/* Foto Kucing */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Foto Kucing</Text>
-              <TouchableOpacity style={styles.imageUploadButton} onPress={showImageOptions}>
+              <TouchableOpacity style={styles.imageUploadButton} onPress={pickImage}>
                 {formData.image ? (
                   <Image
                     source={{ uri: formData.image }}

@@ -1,11 +1,10 @@
 // app/(admin)/list-report.tsx
-import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Modal,
+  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -13,20 +12,14 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { PetCard } from "../../components/PetCard";
-import { Pet } from "../../components/types";
+import { API_BASE_URL, Pet } from "../../components/types";
 import { colors, container, spacing, typography } from "../theme";
 
 export default function AdoptionListScreen() {
   const router = useRouter();
   const [cats, setCats] = useState<Pet[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCat, setSelectedCat] = useState<Pet | null>(null);
-  const [modalType, setModalType] = useState<"accept" | "reject" | null>(null);
   const [acceptedCatIds, setAcceptedCatIds] = useState<number[]>([]);
   const [rejectedCatIds, setRejectedCatIds] = useState<number[]>([]);
-
-  const API_BASE_URL = 'http://192.168.51.109:8000';
 
   useEffect(() => {
     fetchCats();
@@ -52,11 +45,10 @@ export default function AdoptionListScreen() {
         id: item.Report_ID,
         name: item.user?.Nama_Lengkap || 'Tanpa Nama',
         image: `${API_BASE_URL}/${item.Foto}`,
-        location: item.user?.Alamat || 'Lokasi tidak diketahui',
-        gender: 'Laki-laki', // default
-        age: '1 Tahun', // default
-        description: item.Deskripsi
+        description: item.Deskripsi,
+        status: item.Rescued === 1 ? "Diselamatkan" : "Belum Diselamatkan"
       }));
+
 
       setCats(mappedCats);
     } catch (error) {
@@ -64,117 +56,77 @@ export default function AdoptionListScreen() {
     }
   };
 
-  const handleAccept = (id: number) => {
+const handleAccept = async (id: number) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    await axios.put(`${API_BASE_URL}/report/rescued/${id}`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // Tambahkan ID ke list accepted dan hapus dari daftar card
     setAcceptedCatIds((prev) => [...prev, id]);
     setRejectedCatIds((prev) => prev.filter((catId) => catId !== id));
-    setModalVisible(false);
-  };
+    setCats((prev) => prev.filter((cat) => cat.id !== id)); // ❗hapus dari list
+  } catch (error) {
+    console.error("Gagal menerima laporan:", error);
+  }
+};
 
-  const handleReject = (id: number) => {
+const handleReject = async (id: number) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    await axios.delete(`${API_BASE_URL}/report/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // Tambahkan ID ke list rejected dan hapus dari daftar card
     setRejectedCatIds((prev) => [...prev, id]);
     setAcceptedCatIds((prev) => prev.filter((catId) => catId !== id));
-    setModalVisible(false);
-  };
+    setCats((prev) => prev.filter((cat) => cat.id !== id)); // ❗hapus dari list
+  } catch (error) {
+    console.error("Gagal menolak laporan:", error);
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>Daftar Laporan Kucing</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.catList}>
-          {cats.map((pet) => (
-            <View key={pet.id} style={styles.petCardWrapper}>
-              <View style={styles.cardRow}>
-                <View style={{ flex: 1 }}>
-                  <PetCard
-                    pet={pet}
-                    onPress={() =>
-                      router.push({
-                        pathname: "/cat-detail",
-                        params: { cat: JSON.stringify(pet) },
-                      })
-                    }
-                  />
-                </View>
+          {cats.length === 0 ? (
+            <Text style={styles.emptyText}>Belum ada laporan masuk.</Text>
+          ) : (
+            cats.map((pet) => (
+              <View key={pet.id} style={styles.card}>
+                <Image source={{ uri: pet.image }} style={styles.image} />
+                <Text style={styles.title}>Nama Pelapor: {pet.name}</Text>
+                <Text style={styles.description}>Deskripsi: {pet.description}</Text>
+                <Text style={styles.status}>Status: {pet.status}</Text>
+
                 <View style={styles.buttonGroup}>
-                  {acceptedCatIds.includes(pet.id) ? (
-                    <TouchableOpacity style={[styles.actionButton, styles.acceptButton]}>
-                      <Text style={styles.buttonText}>Accepted</Text>
-                    </TouchableOpacity>
-                  ) : rejectedCatIds.includes(pet.id) ? (
-                    <TouchableOpacity style={[styles.actionButton, styles.rejectButton]}>
-                      <Text style={styles.buttonText}>Rejected</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <>
-                      <TouchableOpacity
-                        style={[styles.actionButton, styles.acceptButton]}
-                        onPress={() => {
-                          setSelectedCat(pet);
-                          setModalType("accept");
-                          setModalVisible(true);
-                        }}
-                      >
-                        <Text style={styles.buttonText}>Accept</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.actionButton, styles.rejectButton]}
-                        onPress={() => {
-                          setSelectedCat(pet);
-                          setModalType("reject");
-                          setModalVisible(true);
-                        }}
-                      >
-                        <Text style={styles.buttonText}>Reject</Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.acceptButton]}
+                    onPress={() => handleAccept(pet.id)}
+                  >
+                    <Text style={styles.buttonText}>Accept</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.rejectButton]}
+                    onPress={() => handleReject(pet.id)}
+                  >
+                    <Text style={styles.buttonText}>Reject</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-            </View>
-          ))}
+            ))
+          )}
         </View>
       </ScrollView>
 
-      {/* MODAL KONFIRMASI */}
-      <Modal transparent visible={modalVisible} animationType="fade">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalText}>
-              {modalType === "accept"
-                ? `Terima laporan kucing ${selectedCat?.name}?`
-                : `Tolak laporan kucing ${selectedCat?.name}?`}
-            </Text>
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.rejectButton]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>Batal</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  modalType === "accept" ? styles.acceptButton : styles.rejectButton,
-                ]}
-                onPress={() => {
-                  if (modalType === "accept" && selectedCat) handleAccept(selectedCat.id);
-                  else if (modalType === "reject" && selectedCat) handleReject(selectedCat.id);
-                }}
-              >
-                <Text style={styles.buttonText}>
-                  {modalType === "accept" ? "Terima" : "Tolak"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -261,4 +213,54 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 999,
   },
+
+card: {
+  backgroundColor: "#ffffff",
+  padding: 16,
+  borderRadius: 16,
+  marginBottom: 20,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 6,
+  elevation: 4,
+},
+
+image: {
+  width: "100%",
+  height: 180,
+  borderRadius: 12,
+  resizeMode: "cover",
+  marginBottom: 12,
+},
+
+title: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#1E293B",
+  marginBottom: 6,
+},
+
+description: {
+  fontSize: 14,
+  color: "#334155",
+  marginBottom: 6,
+  lineHeight: 20,
+},
+
+status: {
+  fontSize: 13,
+  fontStyle: "italic",
+  color: "#64748B",
+  marginBottom: 12,
+},
+
+emptyText: {
+  textAlign: "center",
+  fontSize: 16,
+  color: "#94A3B8",
+  marginTop: spacing.lg,
+},
+
+
 });

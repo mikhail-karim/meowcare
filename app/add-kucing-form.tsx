@@ -21,11 +21,10 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { API_BASE_URL } from '../components/types';
 import { container, spacing, typography } from './theme';
 
-
 export default function LaporanScreen() {
-  const API_BASE_URL = 'http://192.168.0.108:8000';
   const [rasList, setRasList] = useState<string[]>([]);
   const [warnaList, setWarnaList] = useState<string[]>([]);
   const router = useRouter()
@@ -259,7 +258,7 @@ export default function LaporanScreen() {
     <Text style={styles.inputLabel}>Umur Kucing</Text>
     <TextInput
       style={styles.input}
-      placeholder="Contoh: 3 bulan"
+      placeholder="Masukkan angka umur (dalam bulan)"
       value={formData.umur}
       onChangeText={(text) => setFormData({ ...formData, umur: text })}
       placeholderTextColor="#94A3B8"
@@ -271,7 +270,7 @@ export default function LaporanScreen() {
     <Text style={styles.inputLabel}>Jenis Kelamin</Text>
     <TextInput
       style={styles.input}
-      placeholder="Jantan / Betina"
+      placeholder="Laki-laki / Perempuan"
       value={formData.jeniskelamin}
       onChangeText={(text) => setFormData({ ...formData, jeniskelamin: text })}
       placeholderTextColor="#94A3B8"

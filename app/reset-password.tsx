@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors, container, spacing, typography } from './theme';
 
-const API_BASE_URL = 'http://192.168.0.108:8000';
+import { API_BASE_URL } from '../components/types';
 
 export default function ResetPasswordScreen() {
   const router = useRouter();

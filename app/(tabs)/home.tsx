@@ -5,9 +5,8 @@ import * as Clipboard from 'expo-clipboard';
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { API_BASE_URL } from '../../components/types';
 import { colors, container, typography } from '../theme';
-
-const API_BASE_URL = 'http://192.168.0.108:8000';
 
 export default function HomeScreen() {
   const router = useRouter()
