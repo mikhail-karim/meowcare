@@ -1,70 +1,109 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
+import { API_BASE_URL } from '../components/types';
 import { colors, spacing, typography } from "./theme";
+
 
 export default function EdukasiDetailScreen() {
   const router = useRouter();
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(259);
-  const [comments, setComments] = useState([
-    { id: 1, author: "jamet kudasai", text: "Awesome" },
-    { id: 2, author: "jamet kudasai", text: "nice info" },
-  ]);
-  const [commentInput, setCommentInput] = useState("");
+  const [likeCount, setLikeCount] = useState(0);
+  const [viewCount, setViewCount] = useState(0);
+  const [article, setArticle] = useState<any>(null);
 
-  const handleLike = () => {
-    setLiked((prev) => {
-      const newLiked = !prev;
-      setLikeCount((count) => count + (newLiked ? 1 : -1));
-      return newLiked;
-    });
+  type Comment = {
+    id: number;
+    author: string;
+    text: string;
+    avatar?: { uri: string };
   };
 
-  const handleAddComment = () => {
-    if (commentInput.trim() !== "") {
-      const newComment = {
-        id: Date.now(),
-        author: "jamet kudasai",
-        text: commentInput.trim(),
-      };
-      setComments([...comments, newComment]);
-      setCommentInput("");
+  const [comments, setComments] = useState<Comment[]>([]);
+
+  useEffect(() => {
+    const fetchArticleDetail = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('selectedArticle');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const articleId = parsed.id || parsed.Artikel_ID;
+
+          // GET artikel detail
+          const response = await axios.get(`${API_BASE_URL}/artikel/${articleId}`);
+          const data = response.data;
+
+          const fullArticle = {
+            id: data.Artikel_ID,
+            title: data.Judul,
+            category: data.Kategori,
+            content: data.Artikel,
+            image: { uri: `${API_BASE_URL}/${data.Thumbnail}` },
+          };
+
+          setArticle(fullArticle);
+          setLikeCount(data.Likes || 0);
+          setViewCount(data.View || 0);
+
+          // GET komentar artikel
+          const commentResponse = await axios.get(`${API_BASE_URL}/comments/artikel/${articleId}`);
+          const commentData = commentResponse.data;
+
+          const formattedComments = commentData.map((comment: any) => ({
+            id: comment.Comments_ID,
+            author: comment.user.Username,
+            text: comment.Comments,
+            avatar: { uri: `${API_BASE_URL}/${comment.user.Foto_Profil}` },
+          }));
+
+          setComments(formattedComments);
+        }
+      } catch (error) {
+        console.error("Gagal memuat artikel atau komentar:", error);
+      }
+    };
+
+    fetchArticleDetail();
+  }, []);
+
+
+  {/* Fungsi Delete (Placeholder) */}
+  const handleDelete = async () => {
+    try {
+      const stored = await AsyncStorage.getItem('selectedArticle');
+      if (!stored) throw new Error("Artikel tidak ditemukan di penyimpanan lokal.");
+
+      const parsed = JSON.parse(stored);
+      const artikelId = parsed.id || parsed.Artikel_ID;
+
+      const token = await AsyncStorage.getItem('token');
+      if (!token) throw new Error("Token tidak ditemukan.");
+
+      await axios.delete(`${API_BASE_URL}/artikel/${artikelId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      Alert.alert("Berhasil", "Artikel berhasil dihapus.");
+      router.back(); // kembali ke halaman sebelumnya
+    } catch (error) {
+      console.error("Gagal menghapus artikel:", error);
+      Alert.alert("Gagal", "Terjadi kesalahan saat menghapus artikel.");
     }
   };
 
-  {/* Fungsi Delete (Placeholder) */}
-  const handleDelete = () => {
-  Alert.alert(
-    "Delete Article",
-    "Are you sure you want to delete this article?",
-    [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
-          console.log("Article deleted");
-        },
-      },
-    ],
-      { cancelable: true }
-    );
-  };
   {/* =========================== */}
 
   return (
@@ -76,7 +115,11 @@ export default function EdukasiDetailScreen() {
       >
         <View style={styles.imageContainer}>
           <Image
-            source={require("../assets/images/street-food.png")}
+            source={
+              article?.image
+                ? article.image
+                : require("../assets/images/street-food.png")
+            }
             style={styles.headerImage}
             resizeMode="cover"
           />
@@ -91,10 +134,11 @@ export default function EdukasiDetailScreen() {
         <View style={styles.content}>
           <View style={styles.headerRow}>
             <Text style={[typography.header.medium, styles.title]}>
-              LOREM IPSUM
+              {article?.title || "Judul tidak tersedia"}
             </Text>
+
             <View style={styles.category}>
-              <Text style={styles.categoryText}>Kegiatan</Text>
+              <Text style={styles.categoryText}>{article?.category || "Kategori"}</Text>
             </View>
           </View>
 
@@ -105,32 +149,28 @@ export default function EdukasiDetailScreen() {
               color="#8A8A8A"
               style={{ marginRight: 4 }}
             />
-            <Text style={styles.author}>Penulis</Text>
+            <Text style={styles.author}>KPTKS</Text>
           </View>
 
           <Text style={[typography.body.small.regular, styles.bodyText]}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer
-            pharetra metus metus, vitae maximus nulla maximus sit amet.
-            Phasellus sed aliquam ligula. Nulla facilisi. Mauris ac consectetur
-            metus. Nam sit amet varius felis, nec maximus quam...
+            {article?.content || "Konten artikel tidak tersedia."}
           </Text>
 
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <Ionicons name="eye-outline" size={16} color="#8A8A8A" />
-              <Text style={styles.statText}>259</Text>
+              <Text style={styles.statText}>{viewCount}</Text>
             </View>
 
-            <TouchableOpacity style={styles.statItem} onPress={handleLike}>
+            <TouchableOpacity style={styles.statItem}>
               <Ionicons
-                name={liked ? "heart" : "heart-outline"}
+                name={"heart-outline"}
                 size={16}
-                color={liked ? "#E74C3C" : "#8A8A8A"}
+                color={"#8A8A8A"}
               />
               <Text
                 style={[
                   styles.statText,
-                  liked && { color: "#E74C3C", fontWeight: "bold" },
                 ]}
               >
                 {likeCount}
@@ -149,45 +189,32 @@ export default function EdukasiDetailScreen() {
                 <Text style={[styles.actionText, { color: "#2563EB" }]}>Edit</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={handleDelete}>
-                <Ionicons name="trash-outline" size={16} color="#DC2626" />
-                <Text style={[styles.actionText, { color: "#DC2626" }]}>Delete</Text>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.deleteButton]}
+              onPress={handleDelete}
+            >
+              <Ionicons name="trash-outline" size={16} color="#DC2626" />
+              <Text style={[styles.actionText, { color: "#DC2626" }]}>Delete</Text>
             </TouchableOpacity>
+
           </View>
 
           <Text style={styles.commentHeader}>Komentar</Text>
 
-          {comments.map((item) => (
-            <View key={item.id} style={styles.commentItem}>
-              <Image
-                source={require("../assets/images/mini-avatar.jpeg")}
-                style={styles.avatar}
-              />
-              <View style={styles.commentContent}>
-                <Text style={styles.commentAuthor}>{item.author}</Text>
-                <Text style={styles.commentText}>{item.text}</Text>
-              </View>
-            </View>
-          ))}
-
-          <View style={styles.commentInputRow}>
-            <TextInput
-              placeholder="Tulis komentar di sini..."
-              placeholderTextColor="#B0B0B0"
-              style={styles.commentInput}
-              value={commentInput}
-              onChangeText={setCommentInput}
-              underlineColorAndroid="transparent"
-              selectionColor="#304153"
-              autoCorrect={false}
-            />
-            <TouchableOpacity
-              style={styles.sendButton}
-              onPress={handleAddComment}
-            >
-              <Ionicons name="send" size={20} color="white" />
-            </TouchableOpacity>
+      {comments.map((item) => (
+        <View key={item.id} style={styles.commentItem}>
+          <Image
+            source={item.avatar || require("../assets/images/mini-avatar.jpeg")}
+            style={styles.avatar}
+          />
+          <View style={styles.commentContent}>
+            <Text style={styles.commentAuthor}>{item.author}</Text>
+            <Text style={styles.commentText}>{item.text}</Text>
           </View>
+        </View>
+      ))}
+
+
         </View>
       </ScrollView>
     </SafeAreaView>

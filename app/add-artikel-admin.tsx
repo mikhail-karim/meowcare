@@ -1,9 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
+import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { API_BASE_URL } from '../components/types';
 import { container, spacing, typography } from './theme';
 
 
@@ -59,17 +62,48 @@ export default function AddArticleForm() {
     }, [])
    )
 
-  const handleSubmit = () => {
-    const payload = {
+const handleSubmit = async () => {
+  if (!judul || !artikel) {
+    Alert.alert('Judul dan Artikel wajib diisi!');
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const token = await AsyncStorage.getItem('token'); // Pastikan token tersimpan dengan key ini
+    if (!token) {
+      Alert.alert('Token tidak ditemukan. Silakan login kembali.');
+      return;
+    }
+
+    const formPayload = {
       Judul: judul,
       Kategori: kategori,
       Artikel: artikel,
-      Thumbnail: thumbnail?.uri,
+      Thumbnail: thumbnail?.uri ?? null,
     };
 
-    // console.log('Submitting article:', payload);
-    // // TODO: Submit to API/backend
-  };
+    await axios.post(`${API_BASE_URL}/artikel`, formPayload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    setShowSuccess(true);
+    Alert.alert('Artikel berhasil ditambahkan!');
+    resetForm();
+    router.push('/(admin)/article-admin'); // Kembali ke halaman artikel admin
+  } catch (error: any) {
+    console.error('Gagal submit artikel:', error?.response?.data || error.message);
+    Alert.alert('Gagal menambahkan artikel. Periksa koneksi atau input Anda.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   useEffect(() => {
       const unsubscribe = navigation.addListener('beforeRemove', () => {

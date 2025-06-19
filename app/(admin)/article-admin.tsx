@@ -1,52 +1,79 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { ArticleCard } from "../../components/ArticleCard";
-import { Article } from "../../components/types";
+import { API_BASE_URL, Article } from "../../components/types";
 import { colors, container, spacing, typography } from "../theme";
 
+
 export default function EdukasiScreen() {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
+
   const router = useRouter();
 
-  const articles: Article[] = Array(4).fill({
-    title: "Judul Artikel",
-    category: "Kegiatan",
-    author: "KPTKS",
-    image: require("../../assets/images/cats/oyen.png"),
-  });
-
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredArticles, setFilteredArticles] = useState<Article[]>(articles);
-  const [showFilter, setShowFilter] = useState(false); // opsional, kamu bisa aktifkan jika tombol filter digunakan
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/artikel`);
+        const result = response.data;
+
+        const formattedArticles: Article[] = result.map((item: any) => ({
+          id: item.Artikel_ID,
+          title: item.Judul,
+          category: item.Kategori,
+          author: "KPTKS",
+          image: { uri: `${API_BASE_URL}/${item.Thumbnail}` }, // asumsikan path relatif
+        }));
+
+        setArticles(formattedArticles);
+        setFilteredArticles(formattedArticles);
+      } catch (error) {
+        console.error("Gagal mengambil artikel:", error);
+      }
+    };
+
+    fetchArticles();
+  }, []);
 
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-      const filtered = articles.filter((article) =>
-          article.title.toLowerCase().includes(query.toLowerCase()) ||
-          article.category.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredArticles(filtered);
-    };
+    const filtered = articles.filter((article) =>
+      article.title.toLowerCase().includes(query.toLowerCase()) ||
+      article.category.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredArticles(filtered);
+  };
 
-  const renderArticleCard = (article: Article, index: number) => (
-    <ArticleCard
-      key={index}
-      article={article}
-      onPress={() => {
+
+const renderArticleCard = (article: Article, index: number) => (
+  <ArticleCard
+    key={index}
+    article={article}
+    onPress={async () => {
+      try {
+        await AsyncStorage.setItem('selectedArticle', JSON.stringify(article));
         router.push("/artikel-detail-admin");
-      }}
-    />
-  );
+      } catch (error) {
+        console.error("Gagal menyimpan artikel ke AsyncStorage:", error);
+      }
+    }}
+  />
+);
 
   return (
     <SafeAreaView style={styles.container}>

@@ -126,9 +126,11 @@ $router->group(['prefix' => 'konfirmasi', 'middleware' => ['jwt.auth', 'role:adm
 
 // Artikel
 $router->group(['prefix' => 'artikel'], function () use ($router) {
+    $router->get('/', 'ArtikelController@index');
+    $router->get('/{id}', 'ArtikelController@show');
+    $router->get('/kategori/{kategori}', 'ArtikelController@getByKategori');
+
     $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
-        $router->get('/', 'ArtikelController@index');
-        $router->get('/{id}', 'ArtikelController@show');
         $router->put('/view/{id}', 'ArtikelController@view');
         $router->put('/likes/{id}', 'ArtikelController@likes');
     });
@@ -141,13 +143,17 @@ $router->group(['prefix' => 'artikel'], function () use ($router) {
 });
 
 // Comments
-$router->group(['prefix' => 'comments', 'middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
+$router->group(['prefix' => 'comments'], function () use ($router) {
     $router->get('/', 'CommentsController@index');
     $router->get('/{id}', 'CommentsController@show');
     $router->get('artikel/{artikel_ID}', 'CommentsController@getByArtikelId');
-    $router->post('/', 'CommentsController@store');
-    $router->put('/{id}', 'CommentsController@update');
-    $router->delete('/{id}', 'CommentsController@destroy');
+    
+    
+    $router->group(['middleware' => ['jwt.auth', 'role:user']], function () use ($router) {
+        $router->post('/', 'CommentsController@store');
+        $router->put('/{id}', 'CommentsController@update');
+        $router->delete('/{id}', 'CommentsController@destroy');
+    });
 });
 
 // Donation
