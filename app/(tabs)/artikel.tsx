@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ImageBackground,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -121,7 +122,11 @@ const renderArticleCard = (article: Article, index: number) => (
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.bannerCard}>
+        <ImageBackground
+          source={require("../../assets/images/sterilisasi.jpeg")}
+          style={styles.bannerCard}
+          imageStyle={{ borderRadius: 16 }}
+        >
           <Text style={styles.bannerTitle}>Pahami pentingnya sterilisasi</Text>
           <TouchableOpacity
             style={styles.bannerButton}
@@ -129,7 +134,7 @@ const renderArticleCard = (article: Article, index: number) => (
           >
             <Text style={styles.bannerButtonText}>Pelajari</Text>
           </TouchableOpacity>
-        </View>
+        </ImageBackground>
 
         {/* Tab Filter */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
@@ -212,8 +217,11 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     ...typography.body.large.semiBold,
-    color: "#1E293B",
+    color: "#fff",
     marginBottom: spacing.sm,
+    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 4,
   },
   bannerButton: {
     alignSelf: "flex-start",

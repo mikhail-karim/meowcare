@@ -46,7 +46,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="add-kucing-form-admin"
         options={{
-          title: 'Adopt',
+          title: 'Adopsi',
           tabBarIcon: ({ color }) => (
             <Ionicons name="paw-outline" size={28} color={color} />
           ),

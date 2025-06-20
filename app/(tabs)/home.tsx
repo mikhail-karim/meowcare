@@ -3,7 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import LottieView from 'lottie-react-native';
+import { useEffect, useRef, useState } from "react";
 import { Image, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { API_BASE_URL } from '../../components/types';
 import { colors, container, typography } from '../theme';
@@ -12,6 +13,18 @@ export default function HomeScreen() {
   const router = useRouter()
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false)
   const [showCopyFeedback, setShowCopyFeedback] = useState(false)
+  const [userName, setUserName] = useState('')
+  const animationRef = useRef<LottieView>(null)
+
+  useEffect(() => {
+    const loadUserName = async () => {
+      const name = await AsyncStorage.getItem('nama_lengkap')
+      if (name) {
+        setUserName(name)
+      }
+    }
+    loadUserName()
+  }, [])
 
   const handleProfilePress = () => {
   setIsProfileModalVisible(false);
@@ -44,7 +57,7 @@ export default function HomeScreen() {
 
   const handleWhatsAppRedirect = () => {
     // TODO: Replace with actual WhatsApp number
-    Linking.openURL('https://wa.me/6282228294844')
+    Linking.openURL('https://wa.me/6285233338292')
   }
 
   const handleCopyAccountNumber = async () => {
@@ -134,6 +147,20 @@ export default function HomeScreen() {
       {/* Scrollable Content */}
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
+          {userName && (
+            <View style={styles.greetingBubble}>
+              <Text style={styles.greetingText}>Halo {userName}!</Text>
+            </View>
+          )}
+          <View style={styles.animationContainer}>
+            <LottieView
+              ref={animationRef}
+              source={require('../../assets/animations/meong.json')}
+              autoPlay
+              loop
+              style={styles.animation}
+            />
+          </View>
           <Text style={styles.welcomeText}>Selamat Datang di MeowCare</Text>
           <Text style={styles.subtitleText}>
             Platform untuk membantu kucing terlantar menemukan rumah baru
@@ -366,6 +393,17 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+  },
+  animationContainer: {
+    width: '100%',
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 30,
+  },
+  animation: {
+    width: 350,
+    height: 350,
   },
   welcomeText: {
     ...typography.header.large,
@@ -645,6 +683,17 @@ const styles = StyleSheet.create({
     ...typography.body.small.regular,
     color: colors.background,
   },
+  greetingBubble: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 30,
+    alignSelf: 'flex-end',
+    marginBottom: 16,
+  },
+  greetingText: {
+    ...typography.body.medium.semiBold,
+    color: colors.background,
   
   /* --- Social & Community Section Styles --- */
   socialContainer: {
