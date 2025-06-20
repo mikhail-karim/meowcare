@@ -11,8 +11,7 @@ class PengajuanController extends Controller
     public function index()
     {
         return Pengajuan::with(['user', 'pet'])
-                    ->where('Approved', 0) // Filter hanya yang Approved = false / 0
-                    ->get();
+                    ->get(); // Tampilkan semua pengajuan, tidak hanya yang pending
     }
 
     public function show($id)
@@ -53,7 +52,7 @@ class PengajuanController extends Controller
         // Buat pengajuan baru
         $pengajuan = Pengajuan::create([
             'Alasan' => $request->input('Alasan'),
-            'Approved' => false,
+            'Approved' => Pengajuan::STATUS_PENDING,
             'User_ID' => $user->User_ID,
             'Pet_ID' => $request->input('Pet_ID'),
         ]);

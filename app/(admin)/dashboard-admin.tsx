@@ -2,8 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   SafeAreaView,
   ScrollView,
@@ -15,149 +17,354 @@ import {
 import { API_BASE_URL } from '../../components/types';
 import { colors, container, spacing, typography } from '../theme';
 
-
-export default function AdoptionListScreen() {
+export default function AdminDashboardScreen() {
   const router = useRouter();
   const [pengajuanList, setPengajuanList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchPengajuan = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/pengajuan`);
-        const pengajuanFromApi = Array.isArray(response.data) ? response.data : [response.data];
-
-        setPengajuanList(pengajuanFromApi);
-      } catch (error) {
-        console.error("Gagal memuat data pengajuan:", error);
-      }
-    };
-
     fetchPengajuan();
   }, []);
 
-
-  const handleLogout = async () => {
-  try {
-    console.log('Logout process started');
-    const token = await AsyncStorage.getItem('token');
-    if (!token) throw new Error('Token not found');
-
-    // Panggil API logout dengan header Authorization Bearer token
-    await axios.post(`${API_BASE_URL}/admins/logout`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    // Bersihkan semua data di local storage
-    await AsyncStorage.clear();
-
-    console.log('Logout success, navigating to signin');
-    // Pindah ke halaman index atau signin
-    router.replace('/welcome');
-  } catch (error: unknown) {
-    console.error('Logout error:', error);
-    // Anda bisa tambahkan UI feedback error sesuai kebutuhan Anda di sini
-  }
-};
-
-const renderPengajuanCard = (item: any, index: number) => {
-  const statusApproved = item.Approved === 1;
-  const statusText = statusApproved ? "Disetujui" : "Menunggu Persetujuan";
-  const statusColor = statusApproved ? "#4CAF50" : "#FF9800";
-  const statusIcon = statusApproved ? "checkmark-circle-outline" : "time-outline";
-
-  const handleCardPress = async () => {
+  const fetchPengajuan = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        console.error("Token tidak ditemukan.");
-        return;
-      }
-
-      await axios.post(`${API_BASE_URL}/konfirmasi`, {
-        Pengajuan_ID: item.Pengajuan_ID
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      setLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/pengajuan`);
+      const pengajuanFromApi = Array.isArray(response.data) ? response.data : [response.data];
+      
+      // Sort pengajuan list: pending first, then approved, then rejected
+      const sortedPengajuan = pengajuanFromApi.sort((a, b) => {
+        // Pending (Approved === 0) should come first
+        if (a.Approved === 0 && b.Approved !== 0) return -1;
+        if (a.Approved !== 0 && b.Approved === 0) return 1;
+        
+        // If both are pending, approved, or rejected, maintain original order
+        return 0;
       });
-
-      console.log(`Pengajuan ${item.Pengajuan_ID} berhasil dikonfirmasi.`);
-
-      // Hapus card dari state
-      setPengajuanList(prevList =>
-        prevList.filter(p => p.Pengajuan_ID !== item.Pengajuan_ID)
-      );
+      
+      setPengajuanList(sortedPengajuan);
     } catch (error) {
-      console.error("Gagal mengonfirmasi pengajuan:", error);
+      console.error("Gagal memuat data pengajuan:", error);
+      Alert.alert("Error", "Gagal memuat data pengajuan");
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <TouchableOpacity key={index} style={styles.card} onPress={handleCardPress}>
-      <Image
-        source={{ uri: `${API_BASE_URL}/${item.pet.Foto}` }}
-        style={styles.catImage}
-      />
-      <View style={styles.cardContent}>
-        <Text style={styles.catName}>{item.pet.Nama}</Text>
-        <Text style={styles.infoText}>
-          <Text style={styles.label}>Pengaju: </Text>
-          {item.user.Nama_Lengkap}
-        </Text>
-        <Text style={styles.infoText}>
-          <Text style={styles.label}>Alasan: </Text>
-          {item.Alasan}
-        </Text>
-        <View style={styles.statusRow}>
-          <Ionicons name={statusIcon} size={16} color={statusColor} style={{ marginRight: 5 }} />
-          <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
+  const handleLogout = async () => {
+    Alert.alert(
+      "Konfirmasi Logout",
+      "Apakah Anda yakin ingin keluar?",
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('token');
+              if (!token) throw new Error('Token not found');
+
+              await axios.post(`${API_BASE_URL}/admins/logout`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+
+              await AsyncStorage.clear();
+              router.replace('/welcome');
+            } catch (error: unknown) {
+              console.error('Logout error:', error);
+              Alert.alert("Error", "Gagal melakukan logout");
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleApprove = async (item: any) => {
+    Alert.alert(
+      "Konfirmasi Persetujuan",
+      `Apakah Anda yakin ingin menyetujui pengajuan adopsi untuk ${item.pet.Nama}?`,
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Setujui",
+          style: "default",
+          onPress: async () => {
+            await processRequest(item.Pengajuan_ID, 'approve');
+          }
+        }
+      ]
+    );
+  };
+
+  const handleReject = async (item: any) => {
+    Alert.alert(
+      "Konfirmasi Penolakan",
+      `Apakah Anda yakin ingin menolak pengajuan adopsi untuk ${item.pet.Nama}?`,
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Tolak",
+          style: "destructive",
+          onPress: async () => {
+            await processRequest(item.Pengajuan_ID, 'reject');
+          }
+        }
+      ]
+    );
+  };
+
+  const processRequest = async (pengajuanId: number, action: 'approve' | 'reject') => {
+    try {
+      setProcessingId(pengajuanId);
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert("Error", "Token tidak ditemukan");
+        return;
+      }
+
+      const endpoint = action === 'approve' ? '/konfirmasi' : '/reject';
+      await axios.post(`${API_BASE_URL}${endpoint}`, {
+        Pengajuan_ID: pengajuanId
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const actionText = action === 'approve' ? 'disetujui' : 'ditolak';
+      Alert.alert("Sukses", `Pengajuan berhasil ${actionText}`);
+
+      // Refresh data
+      await fetchPengajuan();
+    } catch (error) {
+      console.error(`Gagal ${action} pengajuan:`, error);
+      Alert.alert("Error", `Gagal ${action === 'approve' ? 'menyetujui' : 'menolak'} pengajuan`);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const getStatusInfo = (approved: number) => {
+    if (approved === 1) {
+      return {
+        text: "Disetujui",
+        color: "#10B981",
+        icon: "checkmark-circle" as const,
+        bgColor: "#D1FAE5"
+      };
+    } else if (approved === 2) {
+      return {
+        text: "Ditolak",
+        color: "#EF4444",
+        icon: "close-circle" as const,
+        bgColor: "#FEE2E2"
+      };
+    } else {
+      return {
+        text: "Menunggu",
+        color: "#F59E0B",
+        icon: "time" as const,
+        bgColor: "#FEF3C7"
+      };
+    }
+  };
+
+  const renderPengajuanCard = (item: any, index: number) => {
+    const statusInfo = getStatusInfo(item.Approved);
+    const isProcessing = processingId === item.Pengajuan_ID;
+    const isPending = item.Approved === 0;
+
+    return (
+      <View key={index} style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={styles.petInfo}>
+            <Image
+              source={{ uri: `${API_BASE_URL}/${item.pet.Foto}` }}
+              style={styles.catImage}
+            />
+            <View style={styles.petDetails}>
+              <Text style={styles.catName}>{item.pet.Nama}</Text>
+              <View style={styles.petMeta}>
+                <View style={styles.metaItem}>
+                  <Ionicons name="paw-outline" size={14} color="#6B7280" />
+                  <Text style={styles.metaText}>{item.pet.ras?.Nama || "Ras tidak diketahui"}</Text>
+                </View>
+                <View style={styles.metaItem}>
+                  <Ionicons name="location-outline" size={14} color="#6B7280" />
+                  <Text style={styles.metaText} numberOfLines={1} ellipsizeMode="tail">
+                    {item.user.Alamat || "Lokasi tidak diketahui"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+          <View style={[styles.statusBadge, { backgroundColor: statusInfo.bgColor }]}>
+            <Ionicons name={statusInfo.icon} size={16} color={statusInfo.color} />
+            <Text style={[styles.statusText, { color: statusInfo.color }]}>
+              {statusInfo.text}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.cardBody}>
+          <View style={styles.applicantInfo}>
+            <View style={styles.applicantHeader}>
+              <Ionicons name="person-outline" size={16} color="#374151" />
+              <Text style={styles.applicantTitle}>Informasi Pengaju</Text>
+            </View>
+            <Text style={styles.applicantName}>{item.user.Nama_Lengkap}</Text>
+            <Text style={styles.applicantEmail}>{item.user.Email}</Text>
+          </View>
+
+          <View style={styles.reasonSection}>
+            <View style={styles.reasonHeader}>
+              <Ionicons name="chatbubble-outline" size={16} color="#374151" />
+              <Text style={styles.reasonTitle}>Alasan Adopsi</Text>
+            </View>
+            <Text style={styles.reasonText}>{item.Alasan}</Text>
+          </View>
+
+          <View style={styles.cardBottomSection}>
+            {isPending ? (
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.rejectButton]}
+                  onPress={() => handleReject(item)}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <ActivityIndicator size="small" color="#EF4444" />
+                  ) : (
+                    <>
+                      <Ionicons name="close" size={16} color="#EF4444" />
+                      <Text style={styles.rejectButtonText}>Tolak</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.approveButton]}
+                  onPress={() => handleApprove(item)}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <>
+                      <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      <Text style={styles.approveButtonText}>Setujui</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.statusConfirmation}>
+                <Ionicons 
+                  name={item.Approved === 1 ? "checkmark-circle" : "close-circle"} 
+                  size={20} 
+                  color={item.Approved === 1 ? "#10B981" : "#EF4444"} 
+                />
+                <Text style={[
+                  styles.statusConfirmationText, 
+                  { color: item.Approved === 1 ? "#10B981" : "#EF4444" }
+                ]}>
+                  {item.Approved === 1 ? "Pengajuan telah disetujui" : "Pengajuan telah ditolak"}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
       </View>
-    </TouchableOpacity>
-  );
-};
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Dashboard</Text>
+        <View>
+          <Text style={styles.headerTitle}>Dashboard Admin</Text>
+          <Text style={styles.headerSubtitle}>Kelola pengajuan adopsi kucing</Text>
+        </View>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#00000" />
+          <Ionicons name="log-out-outline" size={24} color="#EF4444" />
         </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Placeholder Admin Profile */}
-        <View>
-          <View style={[styles.view, styles.bg]}>
-            <View style={styles.box}>
-              <Image style={styles.pfp} resizeMode="cover" source={require('../../assets/images/adminplaceholder.png')} />
-              <View>
-                <Text style={styles.name}>Admin KPKTS</Text>
-                <Text style={styles.aboutAdmin}>
-                  MeowCare Admin{"\n"}
-                  admin@admin.com
-                </Text>
-              </View>
+        {/* Admin Profile Card */}
+        <View style={styles.profileCard}>
+          <View style={styles.profileContent}>
+            <Image 
+              style={styles.profileImage} 
+              resizeMode="cover" 
+              source={require('../../assets/images/adminplaceholder.png')} 
+            />
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>Admin KPKTS</Text>
+              <Text style={styles.profileRole}>Administrator</Text>
+              <Text style={styles.profileEmail}>admin@kpkts.com</Text>
             </View>
           </View>
         </View>
 
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Daftar Pengajuan Kucing</Text>
-      </View>
+        {/* Stats Section */}
+        <View style={styles.statsSection}>
+          <Text style={styles.sectionTitle}>Statistik Pengajuan</Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <View style={styles.statIcon}>
+                <Ionicons name="time-outline" size={24} color="#F59E0B" />
+              </View>
+              <Text style={styles.statNumber}>
+                {pengajuanList.filter(p => p.Approved === 0).length}
+              </Text>
+              <Text style={styles.statLabel}>Menunggu</Text>
+            </View>
+            <View style={styles.statCard}>
+              <View style={styles.statIcon}>
+                <Ionicons name="checkmark-circle-outline" size={24} color="#10B981" />
+              </View>
+              <Text style={styles.statNumber}>
+                {pengajuanList.filter(p => p.Approved === 1).length}
+              </Text>
+              <Text style={styles.statLabel}>Disetujui</Text>
+            </View>
+            <View style={styles.statCard}>
+              <View style={styles.statIcon}>
+                <Ionicons name="close-circle-outline" size={24} color="#EF4444" />
+              </View>
+              <Text style={styles.statNumber}>
+                {pengajuanList.filter(p => p.Approved === 2).length}
+              </Text>
+              <Text style={styles.statLabel}>Ditolak</Text>
+            </View>
+          </View>
+        </View>
 
-      
-        {/* Cat List */}
-      <View style={styles.catList}>
-        {pengajuanList.length === 0 ? (
-          <Text style={styles.emptyText}>Belum ada pengajuan adopsi saat ini.</Text>
-        ) : (
-          pengajuanList.map(renderPengajuanCard)
-        )}
-      </View>
-
-
+        {/* Pengajuan List */}
+        <View style={styles.pengajuanSection}>
+          <Text style={styles.sectionTitle}>Daftar Pengajuan Adopsi</Text>
+          
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={styles.loadingText}>Memuat data pengajuan...</Text>
+            </View>
+          ) : pengajuanList.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="document-outline" size={64} color="#D1D5DB" />
+              <Text style={styles.emptyTitle}>Belum ada pengajuan</Text>
+              <Text style={styles.emptySubtitle}>
+                Saat ini belum ada pengajuan adopsi yang masuk
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.pengajuanList}>
+              {pengajuanList.map(renderPengajuanCard)}
+            </View>
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -166,326 +373,301 @@ const renderPengajuanCard = (item: any, index: number) => {
 const styles = StyleSheet.create({
   container: {
     ...container.screen,
+    backgroundColor: "#F8FAFC",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 12,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
     backgroundColor: colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
   },
   headerTitle: {
     ...typography.header.medium,
     color: colors.text.primary,
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    ...typography.body.small.regular,
+    color: colors.text.secondary,
   },
   logoutButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.surface.medium,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FEE2E2",
     justifyContent: "center",
     alignItems: "center",
   },
   content: {
-    ...container.content,
-  },
-  bg: {
-    backgroundColor: "#fff",
-    flex: 1
-  },
-  box: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16 
-  },
-  view: {
-    // width: "87%",
-    shadowColor: "rgba(0, 0, 0, 0.05)",
-    shadowOffset: {
-        width: 0,
-        height: 1
-    },
-    shadowRadius: 2,
-    elevation: 2,
-    shadowOpacity: 1,    
-    marginHorizontal: spacing.lg,
-    borderRadius: 16,
-    overflow: "hidden",
-    marginBottom: spacing.md,
-    borderStyle: "solid",
-    borderColor: "#94b4c1",
-    borderWidth: 1,
-  },
-  pfp: {
-    width: 100,
-    height: 100,
-    marginRight: 16,
-    borderRadius: 50,
-  },
-  name: {
-    fontSize: 14,
-    fontWeight: "500",
-    fontFamily: "Poppins-Medium",
-    color: "#313131",
-  },
-  aboutAdmin: {
-    fontSize: 12,
-    fontFamily: "Poppins-Regular",
-    color: "#c2c3cc",
-    marginTop: 4,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.sm,
-    gap: spacing.sm,
-  },
-  searchInputContainer: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
+  },
+  profileCard: {
+    margin: spacing.lg,
     backgroundColor: colors.background,
-    borderRadius: 25,
-    borderWidth: 1.5,
-    borderColor: colors.secondary,
-    paddingHorizontal: spacing.md,
-    height: 48
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: spacing.sm,
-    color: colors.text.primary,
-    ...typography.body.medium.regular,
-  },
-  filterButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  addButton: {
-    position: "absolute",
-    bottom: 24,
-    right: 24,
-    backgroundColor: colors.primary,
-    padding: 12,
-    width: 48,
-    height: 48,
-    borderRadius: 50,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 16,
+    padding: spacing.lg,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  catList: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xxl,
+  profileContent: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  modalOverlay: {
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginRight: spacing.md,
+  },
+  profileInfo: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
   },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingTop: 24,
-    maxHeight: '80%',
+  profileName: {
+    ...typography.header.small,
+    color: colors.text.primary,
+    marginBottom: 4,
   },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    marginBottom: 24,
-  },
-  modalTitle: {
-    ...typography.header.medium,
-    color: '#304153',
-  },
-  filterScroll: {
-    paddingHorizontal: 24,
-  },
-  filterSection: {
-    marginBottom: 24,
-  },
-  filterTitle: {
+  profileRole: {
     ...typography.body.medium.semiBold,
-    color: '#304153',
-    marginBottom: 12,
+    color: colors.primary,
+    marginBottom: 2,
   },
-  filterOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  profileEmail: {
+    ...typography.body.small.regular,
+    color: colors.text.secondary,
   },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  statsSection: {
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  sectionTitle: {
+    ...typography.header.medium,
+    color: colors.text.primary,
+    marginBottom: spacing.md,
+  },
+  statsGrid: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.background,
+    borderRadius: 16,
+    padding: spacing.md,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#F3F4F6",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+  statNumber: {
+    ...typography.header.large,
+    color: colors.text.primary,
+    marginBottom: 2,
+  },
+  statLabel: {
+    ...typography.body.small.regular,
+    color: colors.text.secondary,
+  },
+  pengajuanSection: {
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.xxl,
+  },
+  loadingContainer: {
+    alignItems: "center",
+    paddingVertical: spacing.xl,
+  },
+  loadingText: {
+    ...typography.body.medium.regular,
+    color: colors.text.secondary,
+    marginTop: spacing.md,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    paddingVertical: spacing.xl,
+  },
+  emptyTitle: {
+    ...typography.header.small,
+    color: colors.text.secondary,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  emptySubtitle: {
+    ...typography.body.medium.regular,
+    color: colors.text.secondary,
+    textAlign: "center",
+    paddingHorizontal: spacing.lg,
+  },
+  pengajuanList: {
+    gap: spacing.md,
+  },
+  card: {
+    backgroundColor: colors.background,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    overflow: "hidden",
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    padding: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+  },
+  petInfo: {
+    flexDirection: "column",
+    flex: 1,
+  },
+  catImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 16,
+    marginRight: spacing.md,
+    marginBottom: spacing.md,
+    backgroundColor: "#F3F4F6",
+  },
+  petDetails: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  catName: {
+    ...typography.body.large.semiBold,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+  },
+  petMeta: {
+    gap: spacing.xs,
+  },
+  metaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    minHeight: 20,
+  },
+  metaText: {
+    ...typography.body.small.regular,
+    color: colors.text.secondary,
+    flex: 1,
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     borderRadius: 20,
-    backgroundColor: '#F1F5F9',
+    gap: 4,
+  },
+  statusText: {
+    ...typography.body.small.semiBold,
+  },
+  cardBody: {
+    padding: spacing.lg,
+  },
+  applicantInfo: {
+    marginBottom: spacing.lg,
+  },
+  applicantHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.sm,
     gap: 6,
   },
-  filterChipActive: {
-    backgroundColor: '#304153',
-  },
-  filterChipText: {
-    ...typography.body.small.regular,
-    color: '#304153',
-  },
-  filterChipTextActive: {
-    color: '#fff',
-  },
-  modalFooter: {
-    flexDirection: 'row',
-    padding: 24,
-    gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-  },
-  resetButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: '#304153',
-    alignItems: 'center',
-  },
-  resetButtonText: {
+  applicantTitle: {
     ...typography.body.medium.semiBold,
-    color: '#304153',
+    color: colors.text.primary,
   },
-  applyButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 24,
-    backgroundColor: '#304153',
-    alignItems: 'center',
-  },
-  applyButtonText: {
-    ...typography.body.medium.semiBold,
-    color: '#fff',
-  },
-  locationInputContainer: {
-    marginBottom: 8,
-  },
-  locationSearchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F1F5F9',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1.5,
-    borderColor: '#CBD5E1',
-  },
-  locationInput: {
-    flex: 1,
-    marginLeft: 8,
+  applicantName: {
     ...typography.body.medium.regular,
-    color: '#304153',
+    color: colors.text.primary,
+    marginBottom: 2,
   },
-  selectedLocation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E6EEF6',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginTop: 8,
-    gap: 8,
-  },
-  selectedLocationText: {
+  applicantEmail: {
     ...typography.body.small.regular,
-    color: '#304153',
-    flex: 1,
+    color: colors.text.secondary,
   },
-  locationSuggestions: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#CBD5E1',
-    maxHeight: 200,
-    marginTop: 4,
+  reasonSection: {
+    marginBottom: spacing.lg,
   },
-  locationSuggestionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+  reasonHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+    gap: 6,
   },
-  locationSuggestionText: {
+  reasonTitle: {
+    ...typography.body.medium.semiBold,
+    color: colors.text.primary,
+  },
+  reasonText: {
     ...typography.body.medium.regular,
-    color: '#304153',
+    color: colors.text.secondary,
+    lineHeight: 22,
   },
-card: {
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  padding: 12,
-  marginVertical: 8,
-  marginHorizontal: 16,
-  flexDirection: "row",
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.1,
-  shadowRadius: 4,
-  elevation: 3
-},
-catImage: {
-  width: 80,
-  height: 80,
-  borderRadius: 10,
-  marginRight: 12,
-  backgroundColor: "#f0f0f0"
-},
-cardContent: {
-  flex: 1,
-  justifyContent: "center"
-},
-catName: {
-  fontSize: 16,
-  fontWeight: "bold",
-  color: "#333",
-  marginBottom: 4
-},
-infoText: {
-  fontSize: 14,
-  color: "#444",
-  marginBottom: 2
-},
-label: {
-  fontWeight: "600",
-  color: "#666"
-},
-statusRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 6
-},
-statusText: {
-  fontSize: 14,
-  fontWeight: "600"
-},
-emptyText: {
-  fontSize: 16,
-  color: "#888",
-  textAlign: "center",
-  marginTop: 20,
-  paddingHorizontal: 20
-}
-
-}) 
+  cardBottomSection: {
+    marginTop: spacing.lg,
+  },
+  actionButtons: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 12,
+    gap: 6,
+  },
+  rejectButton: {
+    backgroundColor: "#FEE2E2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+  },
+  approveButton: {
+    backgroundColor: colors.primary,
+  },
+  rejectButtonText: {
+    ...typography.body.medium.semiBold,
+    color: "#EF4444",
+  },
+  approveButtonText: {
+    ...typography.body.medium.semiBold,
+    color: colors.background,
+  },
+  statusConfirmation: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: spacing.sm,
+    borderRadius: 12,
+    backgroundColor: "#F3F4F6",
+  },
+  statusConfirmationText: {
+    ...typography.body.small.regular,
+    marginLeft: spacing.sm,
+  },
+}); 

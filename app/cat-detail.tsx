@@ -104,11 +104,31 @@ export default function CatDetailScreen() {
               </View>
               <Text style={styles.pillLabel}>{cat.breed}</Text>
             </View>
+          </View>
+
+          {/* Status Pills */}
+          <View style={styles.statusPillsRow}>
             <View style={styles.pillItem}>
               <View style={styles.pill}>
                 <Ionicons name="color-palette-outline" size={20} color="#547792" />
               </View>
               <Text style={styles.pillLabel}>{cat.color}</Text>
+            </View>
+            <View style={styles.pillItem}>
+              <View style={[styles.pill, styles.statusPill, cat.vaccinated ? styles.statusActive : styles.statusInactive]}>
+                <Ionicons name="shield-checkmark" size={20} color={cat.vaccinated ? "#22C55E" : "#94A3B8"} />
+              </View>
+              <Text style={[styles.pillLabel, cat.vaccinated ? styles.statusActiveText : styles.statusInactiveText]}>
+                {cat.vaccinated ? 'Divaksin' : 'Belum Vaksin'}
+              </Text>
+            </View>
+            <View style={styles.pillItem}>
+              <View style={[styles.pill, styles.statusPill, cat.sterilized ? styles.statusActive : styles.statusInactive]}>
+                <Ionicons name="medical" size={20} color={cat.sterilized ? "#22C55E" : "#94A3B8"} />
+              </View>
+              <Text style={[styles.pillLabel, cat.sterilized ? styles.statusActiveText : styles.statusInactiveText]}>
+                {cat.sterilized ? 'Disteril' : 'Belum Steril'}
+              </Text>
             </View>
           </View>
 
@@ -291,5 +311,38 @@ const styles = StyleSheet.create({
   adoptButtonText: {
     ...typography.body.medium.semiBold,
     color: '#fff',
+  },
+  statusPillsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+    gap: 8,
+  },
+  statusPill: {
+    backgroundColor: '#E6EEF6',
+    borderRadius: 36,
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  statusActive: {
+    backgroundColor: '#E6EEF6',
+  },
+  statusInactive: {
+    backgroundColor: '#F1F5F9',
+  },
+  statusActiveText: {
+    ...typography.body.small.semiBold,
+    color: '#22C55E',
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  statusInactiveText: {
+    ...typography.body.small.regular,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 16,
   },
 }) 

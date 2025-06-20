@@ -694,7 +694,7 @@ const styles = StyleSheet.create({
   greetingText: {
     ...typography.body.medium.semiBold,
     color: colors.background,
-  
+  },
   /* --- Social & Community Section Styles --- */
   socialContainer: {
     marginBottom: 32,

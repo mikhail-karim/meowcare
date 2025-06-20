@@ -39,6 +39,8 @@ class PetController extends Controller
             'Jenis_Kelamin' => 'required|in:Laki-Laki,Perempuan',
             'Ras_ID' => 'required|exists:ras,Ras_ID',
             'Warna_ID' => 'required|exists:warna,Warna_ID',
+            'Divaksin' => 'nullable|boolean',
+            'Sterilisasi' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -61,6 +63,14 @@ class PetController extends Controller
             $data['Foto'] = "images/{$folder}/{$filename}";
         } else {
             $data['Foto'] = "images/pets/default.png";
+        }
+
+        // Convert string values to boolean for Divaksin and Sterilisasi
+        if (isset($data['Divaksin'])) {
+            $data['Divaksin'] = $data['Divaksin'] === '1' || $data['Divaksin'] === true;
+        }
+        if (isset($data['Sterilisasi'])) {
+            $data['Sterilisasi'] = $data['Sterilisasi'] === '1' || $data['Sterilisasi'] === true;
         }
 
         $data['User_ID'] = Auth::user()->User_ID;
@@ -80,6 +90,8 @@ class PetController extends Controller
             'Jenis_Kelamin' => 'required|in:Laki-Laki,Perempuan',
             'Ras_ID' => 'required|exists:ras,Ras_ID',
             'Warna_ID' => 'required|exists:warna,Warna_ID',
+            'Divaksin' => 'nullable|boolean',
+            'Sterilisasi' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -102,6 +114,14 @@ class PetController extends Controller
             $data['Foto'] = "images/{$folder}/{$filename}";
         } else {
             $data['Foto'] = "images/pets/default.png";
+        }
+
+        // Convert string values to boolean for Divaksin and Sterilisasi
+        if (isset($data['Divaksin'])) {
+            $data['Divaksin'] = $data['Divaksin'] === '1' || $data['Divaksin'] === true;
+        }
+        if (isset($data['Sterilisasi'])) {
+            $data['Sterilisasi'] = $data['Sterilisasi'] === '1' || $data['Sterilisasi'] === true;
         }
 
         $payload = JWTAuth::parseToken()->getPayload();
@@ -133,6 +153,8 @@ class PetController extends Controller
             'Jenis_Kelamin' => 'sometimes|in:Laki-Laki,Perempuan',
             'Ras_ID' => 'sometimes|exists:ras,Ras_ID',
             'Warna_ID' => 'sometimes|exists:warna,Warna_ID',
+            'Divaksin' => 'sometimes|boolean',
+            'Sterilisasi' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -152,6 +174,14 @@ class PetController extends Controller
             }
             $file->move($path, $filename);
             $data['Foto'] = "images/{$folder}/{$filename}";
+        }
+
+        // Convert string values to boolean for Divaksin and Sterilisasi
+        if (isset($data['Divaksin'])) {
+            $data['Divaksin'] = $data['Divaksin'] === '1' || $data['Divaksin'] === true;
+        }
+        if (isset($data['Sterilisasi'])) {
+            $data['Sterilisasi'] = $data['Sterilisasi'] === '1' || $data['Sterilisasi'] === true;
         }
 
         $pet->update($data);

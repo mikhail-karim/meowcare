@@ -201,7 +201,7 @@ export default function LaporanScreen() {
           <View style={styles.formContainer}>
             {/* Illustration */}
             <View style={styles.catIllustrationWrapper}>
-              <CatFound width={300} height={300} />
+              <CatFound width={320} height={320} />
             </View>
             <Text style={styles.formTitle}>Ketemu kucing? Ayo laporin di sini!</Text>
             

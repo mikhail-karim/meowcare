@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { ArticleCard } from "../../components/ArticleCard";
 import { API_BASE_URL, Article } from "../../components/types";
-import { container, spacing, typography } from "../theme";
+import { colors, container, spacing, typography } from "../theme";
 
 export default function ArticleScreen() {
   const router = useRouter();
@@ -127,13 +127,15 @@ const renderArticleCard = (article: Article, index: number) => (
           style={styles.bannerCard}
           imageStyle={{ borderRadius: 16 }}
         >
-          <Text style={styles.bannerTitle}>Pahami pentingnya sterilisasi</Text>
-          <TouchableOpacity
-            style={styles.bannerButton}
-            onPress={() => router.push("../sterilisasi")}
-          >
-            <Text style={styles.bannerButtonText}>Pelajari</Text>
-          </TouchableOpacity>
+          <View style={styles.bannerOverlay}>
+            <Text style={styles.bannerTitle}>Pahami pentingnya sterilisasi</Text>
+            <TouchableOpacity
+              style={styles.bannerButton}
+              onPress={() => router.push("../sterilisasi")}
+            >
+              <Text style={styles.bannerButtonText}>Pelajari</Text>
+            </TouchableOpacity>
+          </View>
         </ImageBackground>
 
         {/* Tab Filter */}
@@ -211,17 +213,13 @@ const styles = StyleSheet.create({
   bannerCard: {
     marginHorizontal: spacing.lg,
     marginBottom: spacing.lg,
-    padding: spacing.lg,
-    backgroundColor: "#E2E8F0",
     borderRadius: 16,
+    overflow: 'hidden',
   },
   bannerTitle: {
     ...typography.body.large.semiBold,
     color: "#fff",
     marginBottom: spacing.sm,
-    textShadowColor: "rgba(0,0,0,0.5)",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 4,
   },
   bannerButton: {
     alignSelf: "flex-start",
@@ -280,5 +278,11 @@ const styles = StyleSheet.create({
   articleList: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
+  },
+  bannerOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    padding: spacing.lg,
+    borderRadius: 16,
   },
 });
