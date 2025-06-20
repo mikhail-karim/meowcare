@@ -1,574 +1,166 @@
-import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
-import { useRouter } from "expo-router"
-import { useEffect, useState } from "react"
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  Alert,
   Image,
-  Modal,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View
-} from "react-native"
-import { PetCard } from '../../components/PetCard'
-import { Pet } from '../../components/types'
-import { colors, container, spacing, typography } from '../theme'
+} from "react-native";
+import { API_BASE_URL } from '../../components/types';
+import { colors, container, spacing, typography } from '../theme';
 
-type FilterOptions = {
-  age: string[];
-  gender: string[];
-  vaccinated: boolean | null;
-  sterilized: boolean | null;
-  breed: string[];
-  color: string[];
-  location: string;
-}
-
-// Mock location data
-const locationData = [
-  { id: 1, city: 'Surabaya', districts: ['Wonokromo', 'Rungkut', 'Darmo', 'Gubeng', 'Sukolilo'] },
-  { id: 2, city: 'Sidoarjo', districts: ['Sidoarjo', 'Taman', 'Buduran', 'Waru'] },
-  { id: 3, city: 'Gresik', districts: ['Gresik', 'Bungah', 'Manyar', 'Driyorejo'] },
-]
 
 export default function AdoptionListScreen() {
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [cats, setCats] = useState<Pet[]>([])
-  const [filteredCats, setFilteredCats] = useState<Pet[]>([])
-  const [showFilter, setShowFilter] = useState(false)
-  const [filters, setFilters] = useState<FilterOptions>({
-    age: [],
-    gender: [],
-    vaccinated: null,
-    sterilized: null,
-    breed: [],
-    color: [],
-    location: ''
-  })
-  const [locationSearch, setLocationSearch] = useState("")
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false)
-  const [locationSuggestions, setLocationSuggestions] = useState<{city: string, district: string}[]>([])
-
-  // Available filter options
-  const ageOptions = ['Kitten (< 1 tahun)', 'Dewasa (1-3 tahun)', 'Senior (> 3 tahun)']
-  const genderOptions = ['Laki-laki', 'Perempuan']
-  const breedOptions = ['Domestik', 'Persia', 'Angora']
-  const colorOptions = ['Hitam', 'Putih', 'Abu-abu', 'Oranye', 'Tricolor']
+  const router = useRouter();
+  const [pengajuanList, setPengajuanList] = useState<any[]>([]);
 
   useEffect(() => {
-    // Simulasi data kucing dari API
-    const mockCats: Pet[] = [
-      {
-        id: 1,
-        name: "Wili",
-        location: "Wonokromo, Surabaya",
-        gender: "Laki-laki",
-        age: "1 Tahun",
-        image: require('../../assets/images/cats/wili.png'),
-        vaccinated: true,
-        sterilized: true,
-        breed: "Domestik",
-        color: "Hitam-Putih"
-      },
-      {
-        id: 2,
-        name: "Oyen",
-        location: "Rungkut, Surabaya",
-        gender: "Laki-laki",
-        age: "3 Tahun",
-        image: require('../../assets/images/cats/oyen.png'),
-        vaccinated: true,
-        sterilized: false,
-        breed: "Persia",
-        color: "Oranye"
-      },
-      {
-        id: 3,
-        name: "Bonie",
-        location: "Darmo, Surabaya",
-        gender: "Laki-laki",
-        age: "5 Tahun",
-        image: require('../../assets/images/cats/bonie.png'),
-        vaccinated: false,
-        sterilized: true,
-        breed: "Angora",
-        color: "Abu-abu"
-      },
-    ]
+    const fetchPengajuan = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/pengajuan`);
+        const pengajuanFromApi = Array.isArray(response.data) ? response.data : [response.data];
 
-    setCats(mockCats)
-    setFilteredCats(mockCats)
-  }, [])
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    applyFilters(query)
-  }
-
-  const handleLocationSearch = (text: string) => {
-    setLocationSearch(text)
-    if (text.trim() === '') {
-      setLocationSuggestions([])
-      return
-    }
-
-    const suggestions: {city: string, district: string}[] = []
-    locationData.forEach(city => {
-      city.districts.forEach(district => {
-        if (district.toLowerCase().includes(text.toLowerCase()) || 
-            city.city.toLowerCase().includes(text.toLowerCase())) {
-          suggestions.push({
-            city: city.city,
-            district: district
-          })
-        }
-      })
-    })
-    setLocationSuggestions(suggestions)
-    setShowLocationSuggestions(true)
-  }
-
-  const selectLocation = (city: string, district: string) => {
-    setFilters(prev => ({ ...prev, location: `${district}, ${city}` }))
-    setLocationSearch('')
-    setShowLocationSuggestions(false)
-  }
-
-  const toggleFilter = (category: keyof FilterOptions, value: string | boolean) => {
-    setFilters(prev => {
-      if (typeof value === 'boolean') {
-        return { ...prev, [category]: value }
+        setPengajuanList(pengajuanFromApi);
+      } catch (error) {
+        console.error("Gagal memuat data pengajuan:", error);
       }
-      
-      const currentValues = prev[category] as string[]
-      const newValues = currentValues.includes(value)
-        ? currentValues.filter(v => v !== value)
-        : [...currentValues, value]
-      
-      return { ...prev, [category]: newValues }
-    })
+    };
+
+    fetchPengajuan();
+  }, []);
+
+
+  const handleLogout = async () => {
+  try {
+    console.log('Logout process started');
+    const token = await AsyncStorage.getItem('token');
+    if (!token) throw new Error('Token not found');
+
+    // Panggil API logout dengan header Authorization Bearer token
+    await axios.post(`${API_BASE_URL}/admins/logout`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // Bersihkan semua data di local storage
+    await AsyncStorage.clear();
+
+    console.log('Logout success, navigating to signin');
+    // Pindah ke halaman index atau signin
+    router.replace('/welcome');
+  } catch (error: unknown) {
+    console.error('Logout error:', error);
+    // Anda bisa tambahkan UI feedback error sesuai kebutuhan Anda di sini
   }
+};
 
-  const applyFilters = (searchText: string = searchQuery) => {
-    let filtered = cats
+const renderPengajuanCard = (item: any, index: number) => {
+  const statusApproved = item.Approved === 1;
+  const statusText = statusApproved ? "Disetujui" : "Menunggu Persetujuan";
+  const statusColor = statusApproved ? "#4CAF50" : "#FF9800";
+  const statusIcon = statusApproved ? "checkmark-circle-outline" : "time-outline";
 
-    // Apply search
-    if (searchText.trim() !== "") {
-      filtered = filtered.filter(
-        (cat) =>
-          cat.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          cat.location.toLowerCase().includes(searchText.toLowerCase())
-      )
-    }
+  const handleCardPress = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.error("Token tidak ditemukan.");
+        return;
+      }
 
-    // Apply filters
-    if (filters.age.length > 0) {
-      filtered = filtered.filter(cat => filters.age.includes(cat.age))
-    }
-    if (filters.gender.length > 0) {
-      filtered = filtered.filter(cat => filters.gender.includes(cat.gender))
-    }
-    if (filters.vaccinated !== null) {
-      filtered = filtered.filter(cat => cat.vaccinated === filters.vaccinated)
-    }
-    if (filters.sterilized !== null) {
-      filtered = filtered.filter(cat => cat.sterilized === filters.sterilized)
-    }
-    if (filters.breed.length > 0) {
-      filtered = filtered.filter(cat => filters.breed.includes(cat.breed))
-    }
-    if (filters.color.length > 0) {
-      filtered = filtered.filter(cat => filters.color.includes(cat.color))
-    }
-    if (filters.location) {
-      filtered = filtered.filter(cat => 
-        cat.location.toLowerCase().includes(filters.location.toLowerCase())
-      )
-    }
-
-      setFilteredCats(filtered)
-    }
-
-  const resetFilters = () => {
-    setFilters({
-      age: [],
-      gender: [],
-      vaccinated: null,
-      sterilized: null,
-      breed: [],
-      color: [],
-      location: ''
-    })
-    setFilteredCats(cats)
-  }
-
-  const handleLogout = () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Logout",
-          onPress: () => {
-            router.replace('/signin')
-          },
-          style: "destructive"
+      await axios.post(`${API_BASE_URL}/konfirmasi`, {
+        Pengajuan_ID: item.Pengajuan_ID
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      ]
-    )
-  }
+      });
 
-  const renderFilterModal = () => (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={showFilter}
-      onRequestClose={() => setShowFilter(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Filter</Text>
-            <TouchableOpacity onPress={() => setShowFilter(false)}>
-              <Ionicons name="close" size={24} color="#304153" />
-            </TouchableOpacity>
-          </View>
+      console.log(`Pengajuan ${item.Pengajuan_ID} berhasil dikonfirmasi.`);
 
-          <ScrollView style={styles.filterScroll}>
-            {/* Lokasi */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterTitle}>Lokasi</Text>
-              <View style={styles.locationInputContainer}>
-                <View style={styles.locationSearchContainer}>
-                  <Ionicons name="location-outline" size={20} color="#666" />
-                  <TextInput
-                    style={styles.locationInput}
-                    placeholder="Cari kota atau kecamatan"
-                    value={locationSearch}
-                    onChangeText={handleLocationSearch}
-                    placeholderTextColor="#666"
-                  />
-                </View>
-                {filters.location && (
-                  <View style={styles.selectedLocation}>
-                    <Text style={styles.selectedLocationText}>{filters.location}</Text>
-                    <TouchableOpacity 
-                      onPress={() => setFilters(prev => ({ ...prev, location: '' }))}
-                    >
-                      <Ionicons name="close-circle" size={20} color="#666" />
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-              {showLocationSuggestions && locationSuggestions.length > 0 && (
-                <View style={styles.locationSuggestions}>
-                  {locationSuggestions.map((item, index) => (
-                    <TouchableOpacity
-                      key={`${item.city}-${item.district}-${index}`}
-                      style={styles.locationSuggestionItem}
-                      onPress={() => selectLocation(item.city, item.district)}
-                    >
-                      <Ionicons name="location-outline" size={16} color="#666" />
-                      <Text style={styles.locationSuggestionText}>
-                        {item.district}, {item.city}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
+      // Hapus card dari state
+      setPengajuanList(prevList =>
+        prevList.filter(p => p.Pengajuan_ID !== item.Pengajuan_ID)
+      );
+    } catch (error) {
+      console.error("Gagal mengonfirmasi pengajuan:", error);
+    }
+  };
 
-            {/* Umur */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterTitle}>Umur</Text>
-              <View style={styles.filterOptions}>
-                {ageOptions.map((age) => (
-                  <TouchableOpacity
-                    key={age}
-                    style={[
-                      styles.filterChip,
-                      filters.age.includes(age) && styles.filterChipActive
-                    ]}
-                    onPress={() => toggleFilter('age', age)}
-                  >
-                    <Text style={[
-                      styles.filterChipText,
-                      filters.age.includes(age) && styles.filterChipTextActive
-                    ]}>{age}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {/* Jenis Kelamin */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterTitle}>Jenis Kelamin</Text>
-              <View style={styles.filterOptions}>
-                {genderOptions.map((gender) => (
-                  <TouchableOpacity
-                    key={gender}
-                    style={[
-                      styles.filterChip,
-                      filters.gender.includes(gender) && styles.filterChipActive
-                    ]}
-                    onPress={() => toggleFilter('gender', gender)}
-                  >
-                    <MaterialCommunityIcons 
-                      name={gender === 'Laki-laki' ? 'gender-male' : 'gender-female'} 
-                      size={16} 
-                      color={filters.gender.includes(gender) ? '#fff' : '#304153'} 
-                    />
-                    <Text style={[
-                      styles.filterChipText,
-                      filters.gender.includes(gender) && styles.filterChipTextActive
-                    ]}>{gender}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {/* Vaksin */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterTitle}>Status Vaksin</Text>
-              <View style={styles.filterOptions}>
-                <TouchableOpacity
-                  style={[
-                    styles.filterChip,
-                    filters.vaccinated === true && styles.filterChipActive
-                  ]}
-                  onPress={() => toggleFilter('vaccinated', true)}
-                >
-                  <Ionicons 
-                    name="checkmark-circle" 
-                    size={16} 
-                    color={filters.vaccinated === true ? '#fff' : '#304153'} 
-                  />
-                  <Text style={[
-                    styles.filterChipText,
-                    filters.vaccinated === true && styles.filterChipTextActive
-                  ]}>Sudah Vaksin</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.filterChip,
-                    filters.vaccinated === false && styles.filterChipActive
-                  ]}
-                  onPress={() => toggleFilter('vaccinated', false)}
-                >
-                  <Ionicons 
-                    name="close-circle" 
-                    size={16} 
-                    color={filters.vaccinated === false ? '#fff' : '#304153'} 
-                  />
-                  <Text style={[
-                    styles.filterChipText,
-                    filters.vaccinated === false && styles.filterChipTextActive
-                  ]}>Belum Vaksin</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Sterilisasi */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterTitle}>Status Sterilisasi</Text>
-              <View style={styles.filterOptions}>
-                <TouchableOpacity
-                  style={[
-                    styles.filterChip,
-                    filters.sterilized === true && styles.filterChipActive
-                  ]}
-                  onPress={() => toggleFilter('sterilized', true)}
-                >
-                  <Ionicons 
-                    name="checkmark-circle" 
-                    size={16} 
-                    color={filters.sterilized === true ? '#fff' : '#304153'} 
-                  />
-                  <Text style={[
-                    styles.filterChipText,
-                    filters.sterilized === true && styles.filterChipTextActive
-                  ]}>Sudah Steril</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.filterChip,
-                    filters.sterilized === false && styles.filterChipActive
-                  ]}
-                  onPress={() => toggleFilter('sterilized', false)}
-                >
-                  <Ionicons 
-                    name="close-circle" 
-                    size={16} 
-                    color={filters.sterilized === false ? '#fff' : '#304153'} 
-                  />
-                  <Text style={[
-                    styles.filterChipText,
-                    filters.sterilized === false && styles.filterChipTextActive
-                  ]}>Belum Steril</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Ras */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterTitle}>Ras</Text>
-              <View style={styles.filterOptions}>
-                {breedOptions.map((breed) => (
-                  <TouchableOpacity
-                    key={breed}
-                    style={[
-                      styles.filterChip,
-                      filters.breed.includes(breed) && styles.filterChipActive
-                    ]}
-                    onPress={() => toggleFilter('breed', breed)}
-                  >
-                    <FontAwesome 
-                      name="paw" 
-                      size={16} 
-                      color={filters.breed.includes(breed) ? '#fff' : '#304153'} 
-                    />
-                    <Text style={[
-                      styles.filterChipText,
-                      filters.breed.includes(breed) && styles.filterChipTextActive
-                    ]}>{breed}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {/* Warna */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterTitle}>Warna</Text>
-              <View style={styles.filterOptions}>
-                {colorOptions.map((color) => (
-                  <TouchableOpacity
-                    key={color}
-                    style={[
-                      styles.filterChip,
-                      filters.color.includes(color) && styles.filterChipActive
-                    ]}
-                    onPress={() => toggleFilter('color', color)}
-                  >
-                    <Ionicons 
-                      name="color-palette" 
-                      size={16} 
-                      color={filters.color.includes(color) ? '#fff' : '#304153'} 
-                    />
-                    <Text style={[
-                      styles.filterChipText,
-                      filters.color.includes(color) && styles.filterChipTextActive
-                    ]}>{color}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </ScrollView>
-
-          <View style={styles.modalFooter}>
-            <TouchableOpacity 
-              style={styles.resetButton}
-              onPress={resetFilters}
-            >
-              <Text style={styles.resetButtonText}>Reset</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.applyButton}
-              onPress={() => {
-                applyFilters()
-                setShowFilter(false)
-              }}
-            >
-              <Text style={styles.applyButtonText}>Terapkan</Text>
-            </TouchableOpacity>
-          </View>
+  return (
+    <TouchableOpacity key={index} style={styles.card} onPress={handleCardPress}>
+      <Image
+        source={{ uri: `${API_BASE_URL}/${item.pet.Foto}` }}
+        style={styles.catImage}
+      />
+      <View style={styles.cardContent}>
+        <Text style={styles.catName}>{item.pet.Nama}</Text>
+        <Text style={styles.infoText}>
+          <Text style={styles.label}>Pengaju: </Text>
+          {item.user.Nama_Lengkap}
+        </Text>
+        <Text style={styles.infoText}>
+          <Text style={styles.label}>Alasan: </Text>
+          {item.Alasan}
+        </Text>
+        <View style={styles.statusRow}>
+          <Ionicons name={statusIcon} size={16} color={statusColor} style={{ marginRight: 5 }} />
+          <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
         </View>
       </View>
-    </Modal>
-  )
-
-  const renderCatCard = (pet: Pet) => (
-    <PetCard
-      key={pet.id}
-      pet={pet}
-      onPress={() => router.push({
-        pathname: "/cat-detail",
-        params: { cat: JSON.stringify(pet) }
-      })}
-    />
-  )
+    </TouchableOpacity>
+  );
+};
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Dashboard</Text>
-        <TouchableOpacity 
-          style={styles.logoutButton}
-          onPress={handleLogout}
-        >
-          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={24} color="#00000" />
         </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Placeholder Admin Profile */}
         <View>
-            <View style={[styles.view, styles.bg]}>
-                <View style={styles.box}>
-                    <Image style={styles.pfp} resizeMode="cover" source={require('../../assets/images/adminplaceholder.png')}/>
-                    <View>
-                        <Text style={styles.name}>Satria</Text>
-                        <Text style={styles.aboutAdmin}>
-                            MeowCare Admin{"\n"}
-                            satria@gmail.com
-                        </Text>
-                    </View>
-                </View>
+          <View style={[styles.view, styles.bg]}>
+            <View style={styles.box}>
+              <Image style={styles.pfp} resizeMode="cover" source={require('../../assets/images/adminplaceholder.png')} />
+              <View>
+                <Text style={styles.name}>Admin KPKTS</Text>
+                <Text style={styles.aboutAdmin}>
+                  MeowCare Admin{"\n"}
+                  admin@admin.com
+                </Text>
+              </View>
             </View>
-        </View>
-        {/* ========================= */}
-
-        {/* Search and Filter */}
-        <View style={styles.searchContainer}>
-          <View style={styles.searchInputContainer}>
-            <Ionicons name="search-outline" size={20} color="#666" />
-            <TextInput 
-              style={styles.searchInput} 
-              placeholder="Cari" 
-              value={searchQuery} 
-              onChangeText={handleSearch}
-              placeholderTextColor="#666"
-            />
           </View>
-          <TouchableOpacity 
-            style={styles.filterButton}
-            onPress={() => setShowFilter(true)}
-          >
-            <Ionicons name="options-outline" size={20} color="white" />
-          </TouchableOpacity>
         </View>
 
-        {/* Cat List */}
-        <View style={styles.catList}>{filteredCats.map(renderCatCard)}</View>
-      </ScrollView>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Daftar Pengajuan Kucing</Text>
+      </View>
 
-      {renderFilterModal()}
-{/*       
-        <TouchableOpacity 
-            style={styles.addButton}
-            onPress={() => router.push('/(admin)/add-kucing-form-admin')}
-        >
-            <Ionicons name="add" size={24} color="white" />
-        </TouchableOpacity> */}
+      
+        {/* Cat List */}
+      <View style={styles.catList}>
+        {pengajuanList.length === 0 ? (
+          <Text style={styles.emptyText}>Belum ada pengajuan adopsi saat ini.</Text>
+        ) : (
+          pengajuanList.map(renderPengajuanCard)
+        )}
+      </View>
+
+
+      </ScrollView>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -585,7 +177,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   headerTitle: {
-    ...typography.header.large,
+    ...typography.header.medium,
     color: colors.text.primary,
   },
   logoutButton: {
@@ -840,4 +432,60 @@ const styles = StyleSheet.create({
     ...typography.body.medium.regular,
     color: '#304153',
   },
+card: {
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  padding: 12,
+  marginVertical: 8,
+  marginHorizontal: 16,
+  flexDirection: "row",
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  elevation: 3
+},
+catImage: {
+  width: 80,
+  height: 80,
+  borderRadius: 10,
+  marginRight: 12,
+  backgroundColor: "#f0f0f0"
+},
+cardContent: {
+  flex: 1,
+  justifyContent: "center"
+},
+catName: {
+  fontSize: 16,
+  fontWeight: "bold",
+  color: "#333",
+  marginBottom: 4
+},
+infoText: {
+  fontSize: 14,
+  color: "#444",
+  marginBottom: 2
+},
+label: {
+  fontWeight: "600",
+  color: "#666"
+},
+statusRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 6
+},
+statusText: {
+  fontSize: 14,
+  fontWeight: "600"
+},
+emptyText: {
+  fontSize: 16,
+  color: "#888",
+  textAlign: "center",
+  marginTop: 20,
+  paddingHorizontal: 20
+}
+
 }) 

@@ -1,6 +1,8 @@
-import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
-import { useLocalSearchParams, useRouter } from "expo-router"
-import { useEffect, useState } from "react"
+import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Image,
   SafeAreaView,
@@ -9,43 +11,60 @@ import {
   Text,
   TouchableOpacity,
   View
-} from "react-native"
-import { Pet } from '../components/types'
-import { typography } from './theme'
+} from "react-native";
+import { API_BASE_URL, Pet } from '../components/types';
+import { typography } from './theme';
 
 export default function CatDetailScreen() {
-  const router = useRouter()
-  const params = useLocalSearchParams()
-  const [cat, setCat] = useState<Pet | null>(null)
+  const router = useRouter();
+  const [userId, setUserId] = useState<number | null>(null);
+
+  const [cat, setCat] = useState<Pet | null>(null);
+  
+  const [poster, setPoster] = useState<{
+    name: string;
+    role: string;
+    avatar: { uri: string };
+  } | null>(null);
 
   useEffect(() => {
-    if (params.cat) {
+    const loadCatData = async () => {
       try {
-        const catData = JSON.parse(params.cat as string) as Pet
-        setCat(catData)
+        const value = await AsyncStorage.getItem('selectedCat');
+        const loginId = await AsyncStorage.getItem('id');
+
+        if (loginId) setUserId(parseInt(loginId));
+
+        if (value !== null) {
+          const parsedCat = JSON.parse(value) as Pet & { owner?: number };
+          setCat(parsedCat);
+
+          // Fetch poster (user) data
+          if (parsedCat.owner) {
+            const response = await axios.get(`${API_BASE_URL}/users/id/${parsedCat.owner}`);
+            const userData = response.data;
+
+            setPoster({
+              name: userData.Nama_Lengkap,
+              role: userData.Role,
+              avatar: { uri: `${API_BASE_URL}/${userData.Foto_Profil}` },
+            });
+          }
+        }
       } catch (error) {
-        console.error('Error parsing cat data:', error)
+        console.error('Gagal memuat data:', error);
       }
-    }
-  }, [params.cat])
+    };
 
-  // Mock data for breed, color, description, poster, and date
-  const breed = 'Kucing Domestik'
-  const color = 'Hitam- Putih'
-  const description = 'Dulu ditemuin di jalan, sekarang cari rumah aman. Agak malu-malu.'
-  const poster = {
-    name: 'Satria',
-    role: 'MeowCare Member',
-    avatar: require('../assets/images/mini-avatar.png'), // fallback avatar
-    date: '25 Mei, 2025',
-  }
+    loadCatData();
+  }, []);
 
-  if (!cat) return null
+  if (!cat) return null;
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scroll} contentContainerStyle={{paddingBottom: 120}} showsVerticalScrollIndicator={false}>
-        {/* Cat Image with floating back button */}
+      <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+        {/* Cat Image with back button */}
         <View style={styles.imageContainer}>
           <Image
             source={typeof cat.image === 'string' ? { uri: cat.image } : cat.image}
@@ -61,7 +80,7 @@ export default function CatDetailScreen() {
         <View style={styles.infoCard}>
           <Text style={styles.catName}>{cat.name}</Text>
           <View style={styles.locationRow}>
-            <Ionicons name="location-outline" size={16} color="#8A8A8A" style={{marginRight: 4}} />
+            <Ionicons name="location-outline" size={16} color="#8A8A8A" style={{ marginRight: 4 }} />
             <Text style={styles.locationText}>{cat.location}</Text>
           </View>
 
@@ -77,51 +96,52 @@ export default function CatDetailScreen() {
               <View style={styles.pill}>
                 <FontAwesome name="paw" size={20} color="#547792" />
               </View>
-              <Text style={styles.pillLabel}>{cat.age}</Text>
+              <Text style={styles.pillLabel}>{cat.age} bulan</Text>
             </View>
             <View style={styles.pillItem}>
               <View style={styles.pill}>
                 <Ionicons name="grid-outline" size={20} color="#547792" />
               </View>
-              <Text style={styles.pillLabel}>{breed}</Text>
+              <Text style={styles.pillLabel}>{cat.breed}</Text>
             </View>
             <View style={styles.pillItem}>
               <View style={styles.pill}>
                 <Ionicons name="color-palette-outline" size={20} color="#547792" />
               </View>
-              <Text style={styles.pillLabel}>{color}</Text>
+              <Text style={styles.pillLabel}>{cat.color}</Text>
             </View>
-          </View>
-
-          {/* About Section */}
-          <View style={styles.aboutSection}>
-            <Text style={styles.aboutTitle}>Tentang {cat.name}</Text>
-            <Text style={styles.aboutText}>{description}</Text>
           </View>
 
           {/* Posted By */}
-          <View style={styles.postedBySection}>
-            <Image source={poster.avatar} style={styles.posterImage} />
-            <View style={styles.posterInfo}>
-              <Text style={styles.posterName}>{poster.name}</Text>
-              <Text style={styles.posterRole}>{poster.role}</Text>
+          {poster && (
+            <View style={styles.postedBySection}>
+              <Image source={poster.avatar} style={styles.posterImage} />
+              <View style={styles.posterInfo}>
+                <Text style={styles.posterName}>{poster.name}</Text>
+                <Text style={styles.posterRole}>{poster.role}</Text>
+              </View>
             </View>
-            <Text style={styles.postDate}>{poster.date}</Text>
-          </View>
+          )}
         </View>
       </ScrollView>
 
       {/* Bottom Actions */}
-      <View style={styles.bottomActions}>
-        <TouchableOpacity style={styles.adoptButton} onPress={() => router.push({ pathname: '/adoption-form', params: { cat: JSON.stringify(cat) } })}>
-          <Text style={styles.adoptButtonText}>Ajukan Adopsi</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.chatButton}>
-          <Ionicons name="chatbubble-outline" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      {cat?.owner !== userId && (
+        <View style={styles.bottomActions}>
+          <TouchableOpacity
+            style={styles.adoptButton}
+            onPress={() => router.push({
+              pathname: '/adoption-form',
+              params: { cat: JSON.stringify(cat) }
+            })}
+          >
+            <Text style={styles.adoptButtonText}>Ajukan Adopsi</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -271,13 +291,5 @@ const styles = StyleSheet.create({
   adoptButtonText: {
     ...typography.body.medium.semiBold,
     color: '#fff',
-  },
-  chatButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 36,
-    backgroundColor: '#304153',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 }) 

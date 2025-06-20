@@ -1,7 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   SafeAreaView,
   ScrollView,
@@ -9,39 +12,146 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
+import { API_BASE_URL } from '../components/types';
 import { colors, spacing, typography } from "./theme";
 
 export default function EdukasiDetailScreen() {
   const router = useRouter();
+
+  const [likeCount, setLikeCount] = useState(0);
+  const [viewCount, setViewCount] = useState(0);
+  const [article, setArticle] = useState<any>(null);
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(259);
-  const [comments, setComments] = useState([
-    { id: 1, author: "jamet kudasai", text: "Awesome" },
-    { id: 2, author: "jamet kudasai", text: "nice info" },
-  ]);
-  const [commentInput, setCommentInput] = useState("");
+  const [commentInput, setCommentInput] = useState('');
+  const [comments, setComments] = useState<any[]>([]);
 
-  const handleLike = () => {
-    setLiked((prev) => {
-      const newLiked = !prev;
-      setLikeCount((count) => count + (newLiked ? 1 : -1));
-      return newLiked;
-    });
-  };
+  useEffect(() => {
+    const fetchArticleDetail = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('selectedArticle');
+        const userData = await AsyncStorage.getItem('id');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const articleId = parsed.id || parsed.Artikel_ID;
 
-  const handleAddComment = () => {
-    if (commentInput.trim() !== "") {
-      const newComment = {
-        id: Date.now(),
-        author: "jamet kudasai",
-        text: commentInput.trim(),
-      };
-      setComments([...comments, newComment]);
-      setCommentInput("");
+          // GET artikel detail
+          const response = await axios.get(`${API_BASE_URL}/artikel/${articleId}`);
+          const data = response.data;
+
+          const fullArticle = {
+            id: data.Artikel_ID,
+            title: data.Judul,
+            category: data.Kategori,
+            content: data.Artikel,
+            image: { uri: `${API_BASE_URL}/${data.Thumbnail}` },
+          };
+
+          setArticle(fullArticle);
+          setLikeCount(data.Likes || 0);
+          setViewCount(data.View || 0);
+
+          const likedUsersArray = JSON.parse(data.LikedUsers || "[]");
+          if (likedUsersArray.includes(userData?.toString())) {
+            setLiked(true);
+          }
+
+          // GET komentar artikel
+          const commentResponse = await axios.get(`${API_BASE_URL}/comments/artikel/${articleId}`);
+          const commentData = commentResponse.data;
+
+          const formattedComments = commentData.map((comment: any) => ({
+            id: comment.Comments_ID,
+            author: comment.user.Username,
+            text: comment.Comments,
+            avatar: { uri: `${API_BASE_URL}/${comment.user.Foto_Profil}` },
+          }));
+
+          setComments(formattedComments);
+        }
+      } catch (error) {
+        console.error("Gagal memuat artikel atau komentar:", error);
+      }
+    };
+
+    fetchArticleDetail();
+  }, []);
+
+  const handleLike = async () => {
+    if (!article) return;
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Autentikasi gagal", "Token tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+
+      const response = await axios.put(
+        `${API_BASE_URL}/artikel/likes/${article.id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setLiked((prev) => {
+        const newLiked = !prev;
+        setLikeCount((count) => count + (newLiked ? 1 : -1));
+        return newLiked;
+      });
+    } catch (error) {
+      console.error("Gagal menyukai artikel:", error);
+      Alert.alert("Error", "Gagal menyukai artikel.");
     }
   };
+
+const handleAddComment = async () => {
+  if (commentInput.trim() === "" || !article) return;
+
+  try {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      Alert.alert("Autentikasi gagal", "Token tidak ditemukan. Silakan login ulang.");
+      return;
+    }
+
+    await axios.post(
+      `${API_BASE_URL}/comments`,
+      {
+        Artikel_ID: article.id,
+        Comments: commentInput.trim(),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setCommentInput("");
+
+    // Refresh data komentar
+    const commentResponse = await axios.get(`${API_BASE_URL}/comments/artikel/${article.id}`);
+    const commentData = commentResponse.data;
+
+    const formattedComments = commentData.map((comment: any) => ({
+      id: comment.Comments_ID,
+      author: comment.user.Username,
+      text: comment.Comments,
+      avatar: { uri: `${API_BASE_URL}/${comment.user.Foto_Profil}` },
+    }));
+
+    setComments(formattedComments);
+  } catch (error) {
+    console.error("Gagal menambahkan komentar:", error);
+    Alert.alert("Error", "Gagal menambahkan komentar.");
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -53,7 +163,11 @@ export default function EdukasiDetailScreen() {
         >
           <View style={styles.imageContainer}>
             <Image
-              source={require("../assets/images/street-food.png")}
+              source={
+                article?.image
+                  ? article.image
+                  : require("../assets/images/street-food.png")
+              }
               style={styles.headerImage}
               resizeMode="cover"
             />
@@ -68,10 +182,13 @@ export default function EdukasiDetailScreen() {
           <View style={styles.content}>
             <View style={styles.headerRow}>
               <Text style={[typography.header.medium, styles.title]}>
-                LOREM IPSUM
+                {article?.title || "Judul tidak tersedia"}
               </Text>
+
               <View style={styles.category}>
-                <Text style={styles.categoryText}>Kegiatan</Text>
+                <Text style={styles.categoryText}>
+                  {article?.category || "Kategori"}
+                </Text>
               </View>
             </View>
 
@@ -82,20 +199,17 @@ export default function EdukasiDetailScreen() {
                 color="#8A8A8A"
                 style={{ marginRight: 4 }}
               />
-              <Text style={styles.author}>Penulis</Text>
+              <Text style={styles.author}>KPTKS</Text>
             </View>
 
             <Text style={[typography.body.small.regular, styles.bodyText]}>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer
-              pharetra metus metus, vitae maximus nulla maximus sit amet.
-              Phasellus sed aliquam ligula. Nulla facilisi. Mauris ac
-              consectetur metus. Nam sit amet varius felis, nec maximus quam...
+              {article?.content || "Konten artikel tidak tersedia."}
             </Text>
 
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
                 <Ionicons name="eye-outline" size={16} color="#8A8A8A" />
-                <Text style={styles.statText}>259</Text>
+                <Text style={styles.statText}>{viewCount}</Text>
               </View>
 
               <TouchableOpacity style={styles.statItem} onPress={handleLike}>
@@ -115,30 +229,36 @@ export default function EdukasiDetailScreen() {
               </TouchableOpacity>
 
               <View style={styles.statItem}>
-                <Ionicons
-                  name="chatbubble-outline"
-                  size={16}
-                  color="#8A8A8A"
-                />
+                <Ionicons name="chatbubble-outline" size={16} color="#8A8A8A" />
                 <Text style={styles.statText}>{comments.length}</Text>
               </View>
             </View>
-
-            <Text style={styles.commentHeader}>Komentar</Text>
-
-            {comments.map((item) => (
-              <View key={item.id} style={styles.commentItem}>
-                <Image
-                  source={require("../assets/images/mini-avatar.jpeg")}
-                  style={styles.avatar}
-                />
-                <View style={styles.commentContent}>
-                  <Text style={styles.commentAuthor}>{item.author}</Text>
-                  <Text style={styles.commentText}>{item.text}</Text>
-                </View>
-              </View>
-            ))}
           </View>
+
+          <View style={styles.commentsContainer}>
+            <View style={styles.commentHeaderRow}>
+              <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.text.primary} />
+              <Text style={styles.commentHeader}>Komentar</Text>
+            </View>
+
+            {comments.length === 0 ? (
+              <Text style={styles.emptyComment}>Belum ada komentar.</Text>
+            ) : (
+              comments.map((item) => (
+                <View key={item.id} style={styles.commentItemCard}>
+                  <Image
+                    source={item.avatar || require("../assets/images/mini-avatar.jpeg")}
+                    style={styles.avatar}
+                  />
+                  <View style={styles.commentContent}>
+                    <Text style={styles.commentAuthor}>{item.author}</Text>
+                    <Text style={styles.commentText}>{item.text}</Text>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+
         </ScrollView>
 
         {/* Input komentar tetap di bawah */}
@@ -305,4 +425,39 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginLeft: 8,
   },
+
+  commentHeaderRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 6,
+  marginBottom: 12,
+},
+
+commentsContainer: {
+  paddingHorizontal: spacing.lg,
+  marginTop: 12,
+},
+
+commentItemCard: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+  backgroundColor: colors.surface.light,
+  padding: 10,
+  borderRadius: 12,
+  marginBottom: 12,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+  elevation: 1,
+},
+
+emptyComment: {
+  textAlign: "center",
+  color: colors.text.secondary,
+  fontStyle: "italic",
+  ...typography.body.small.regular,
+  marginTop: 6,
+},
+
 });

@@ -2,7 +2,7 @@
 
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native'
+import { Button, StyleSheet, Text, TextInput, View } from 'react-native'
 import { Pet } from '../components/types'
 
 export default function EditCatScreen() {

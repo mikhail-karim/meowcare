@@ -27,6 +27,21 @@ class ArtikelController extends Controller
         return response()->json($artikel);
     }
 
+    public function getByKategori($kategori)
+    {
+        try {
+            $artikels = Artikel::where('Kategori', $kategori)->get();
+
+            if ($artikels->isEmpty()) {
+                return response()->json(['message' => 'Tidak ada artikel ditemukan untuk kategori ini'], 404);
+            }
+
+            return response()->json($artikels, 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Terjadi kesalahan', 'error' => $e->getMessage()], 500);
+        }
+    }
+
     // Create artikel (hanya admin)
     public function storeAsAdmin(Request $request)
     {

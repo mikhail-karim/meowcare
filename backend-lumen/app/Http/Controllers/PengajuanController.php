@@ -10,7 +10,9 @@ class PengajuanController extends Controller
 {
     public function index()
     {
-        return Pengajuan::with(['user', 'pet'])->get();
+        return Pengajuan::with(['user', 'pet'])
+                    ->where('Approved', 0) // Filter hanya yang Approved = false / 0
+                    ->get();
     }
 
     public function show($id)
@@ -84,4 +86,39 @@ class PengajuanController extends Controller
 
         return response()->json(['message' => 'Pengajuan deleted']);
     }
+
+    public function getByUserId($userId)
+    {
+        $pengajuans = Pengajuan::where('User_ID', $userId)
+            ->with('pet') // hanya ambil relasi pet
+            ->get();
+
+        $filtered = $pengajuans->map(function ($pengajuan) {
+            return [
+                'Approved' => $pengajuan->Approved,
+                'Pet' => $pengajuan->pet ? [
+                    'Pet_ID' => $pengajuan->pet->Pet_ID,
+                    'Nama' => $pengajuan->pet->Nama,
+                    'Foto' => $pengajuan->pet->Foto,
+                    'Umur' => $pengajuan->pet->Umur,
+                    'Jenis_Kelamin' => $pengajuan->pet->Jenis_Kelamin,
+                    'Adopted' => $pengajuan->pet->Adopted,
+                    'Divaksin' => $pengajuan->pet->Divaksin,
+                    'Sterilisasi' => $pengajuan->pet->Sterilisasi,
+                    'Ras_ID' => $pengajuan->pet->Ras_ID,
+                    'Warna_ID' => $pengajuan->pet->Warna_ID,
+                    'User_ID' => $pengajuan->pet->User_ID,
+                    'Admin_ID' => $pengajuan->pet->Admin_ID,
+                    'created_at' => $pengajuan->pet->created_at,
+                    'updated_at' => $pengajuan->pet->updated_at
+                ] : null
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $filtered
+        ]);
+    }
+
 }

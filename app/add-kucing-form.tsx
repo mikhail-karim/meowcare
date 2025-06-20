@@ -21,11 +21,10 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { API_BASE_URL } from '../components/types';
 import { container, spacing, typography } from './theme';
 
-
 export default function LaporanScreen() {
-  const API_BASE_URL = 'http://192.168.0.108:8000';
   const [rasList, setRasList] = useState<string[]>([]);
   const [warnaList, setWarnaList] = useState<string[]>([]);
   const router = useRouter()
@@ -240,7 +239,6 @@ export default function LaporanScreen() {
       ) : (
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.formContainer}>
-
   <Text style={styles.formTitle}>Isi Data Kucing</Text>
 
   {/* Nama Kucing */}
@@ -260,7 +258,7 @@ export default function LaporanScreen() {
     <Text style={styles.inputLabel}>Umur Kucing</Text>
     <TextInput
       style={styles.input}
-      placeholder="Contoh: 3 bulan"
+      placeholder="Masukkan angka umur (dalam bulan)"
       value={formData.umur}
       onChangeText={(text) => setFormData({ ...formData, umur: text })}
       placeholderTextColor="#94A3B8"
@@ -272,7 +270,7 @@ export default function LaporanScreen() {
     <Text style={styles.inputLabel}>Jenis Kelamin</Text>
     <TextInput
       style={styles.input}
-      placeholder="Jantan / Betina"
+      placeholder="Laki-laki / Perempuan"
       value={formData.jeniskelamin}
       onChangeText={(text) => setFormData({ ...formData, jeniskelamin: text })}
       placeholderTextColor="#94A3B8"
@@ -345,6 +343,7 @@ export default function LaporanScreen() {
     )}
   </TouchableOpacity>
 </View>
+
         </ScrollView>
       )}
     </SafeAreaView>
@@ -484,29 +483,6 @@ const styles = StyleSheet.create({
   },
   homeButtonText: {
     ...typography.body.medium.semiBold,
-    color: '#fff',
-  },
-  genderContainer: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  genderButton: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: '#CBD5E1',
-    borderRadius: 30,
-    padding: spacing.md,
-    alignItems: 'center',
-  },
-  genderButtonActive: {
-    backgroundColor: '#222E3A',
-    borderColor: '#222E3A',
-  },
-  genderButtonText: {
-    ...typography.body.medium.regular,
-    color: '#222',
-  },
-  genderButtonTextActive: {
     color: '#fff',
   },
 }) 

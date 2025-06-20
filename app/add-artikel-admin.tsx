@@ -1,10 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
+import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { API_BASE_URL } from '../components/types';
 import { container, spacing, typography } from './theme';
+
 
 export default function AddArticleForm() {
   const router = useRouter()
@@ -20,6 +24,7 @@ export default function AddArticleForm() {
   const [artikel, setArtikel] = useState('');
   const [thumbnail, setThumbnail] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [formData, setFormData] = useState(initialFormState)
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const fadeAnim = useRef(new Animated.Value(0)).current
@@ -45,42 +50,70 @@ export default function AddArticleForm() {
       scaleAnim.setValue(0)
   }, [])
   
+  // Reset form when component mounts
   useEffect(() => {
       resetForm()
   }, [])
   
+    // Reset form when screen becomes focused
   useFocusEffect(
       useCallback(() => {
         resetForm()
     }, [])
    )
 
-  const handleSubmit = () => {
-    setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setShowSuccess(true)
-      
-      // Start success animation
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 4,
-          useNativeDriver: true,
-        })
-      ]).start()
-    }, 1000)
+  const handleSubmit = async () => {
+    if (!judul || !artikel) {
+      Alert.alert('Judul dan Artikel wajib diisi!');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert('Token tidak ditemukan. Silakan login kembali.');
+        return;
+      }
+
+      const formData = new FormData();
+
+      formData.append('Judul', judul);
+      formData.append('Kategori', kategori);
+      formData.append('Artikel', artikel);
+
+      if (thumbnail) {
+        const uriParts = thumbnail.uri.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+
+        formData.append('Thumbnail', {
+          uri: thumbnail.uri,
+          name: `thumbnail.${fileType}`,
+          type: `image/${fileType}`,
+        } as any);
+      }
+
+      await axios.post(`${API_BASE_URL}/artikel`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+        },
+      });
+
+      setShowSuccess(true);
+      Alert.alert('Artikel berhasil ditambahkan!');
+      resetForm();
+      router.push('/(admin)/article-admin');
+    } catch (error: any) {
+      console.error('Gagal submit artikel:', error?.response?.data || error.message);
+      Alert.alert('Gagal menambahkan artikel. Periksa koneksi atau input Anda.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleBackToArticle = () => {
-    router.push('/(admin)/article-admin')
-  }
 
   useEffect(() => {
       const unsubscribe = navigation.addListener('beforeRemove', () => {
@@ -91,109 +124,72 @@ export default function AddArticleForm() {
   }, [navigation, resetForm])
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
+        {/* <TouchableOpacity style={styles.backButton} onPress={() => router.back()}> */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.push('/(admin)/article-admin')}>
           <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Tambah Artikel</Text>
       </View>
 
-      {showSuccess ? (
-        <Animated.View 
-          style={[
-            styles.successContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{ scale: scaleAnim }]
-            }
-          ]}
-        >
-          <View style={styles.successIconContainer}>
-            <Ionicons name="checkmark-circle" size={80} color="#22C55E" />
+      <View style={styles.formContainer}>
+        <Text style={styles.formTitle}>Informasi Artikel</Text>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Judul</Text>
+          <TextInput
+            value={judul}
+            onChangeText={setJudul}
+            style={styles.input}
+            placeholder="Masukkan judul artikel"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Kategori</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={kategori}
+                onValueChange={(itemValue) => setKategori(itemValue)}
+                mode="dropdown" // Only affects Android
+                style={styles.picker}
+              >
+              <Picker.Item label="Edukasi" value="edukasi" />
+              <Picker.Item label="Kegiatan" value="kegiatan" />
+              </Picker>
           </View>
-          <Text style={styles.successText}>Berhasil Menambahkan Artikel</Text>
-          <TouchableOpacity 
-            style={styles.backButton} 
-            onPress={handleBackToArticle}
-          >
-            <Text style={styles.backButtonText}>Kembali ke Artikel</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      ) : (
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.formContainer}>
-            <Text style={styles.formTitle}>Buat Artikel Baru</Text>
+        </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Judul</Text>
-              <TextInput
-                value={judul}
-                onChangeText={setJudul}
-                style={styles.input}
-                placeholder="Masukkan judul artikel"
-                placeholderTextColor="#94A3B8"
-              />
-            </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Artikel</Text>
+          <TextInput
+            value={artikel}
+            onChangeText={setArtikel}
+            style={[styles.input, styles.textArea]}
+            placeholder="Tulis isi artikel di sini"
+            multiline
+          />
+        </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Kategori</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={kategori}
-                  onValueChange={(itemValue) => setKategori(itemValue)}
-                  mode="dropdown"
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Edukasi" value="edukasi" />
-                  <Picker.Item label="Kegiatan" value="kegiatan" />
-                </Picker>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Thumbnail</Text>
+          <TouchableOpacity onPress={pickImage} style={styles.imageUploadButton}>
+            {thumbnail ? (
+              <Image source={{ uri: thumbnail.uri }} style={styles.uploadedImage} />
+            ) : (
+              <View style={styles.uploadPlaceholder}>
+                <Text style={styles.uploadText}>Pilih Gambar</Text>
               </View>
-            </View>
+            )}
+          </TouchableOpacity>
+        </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Artikel</Text>
-              <TextInput
-                value={artikel}
-                onChangeText={setArtikel}
-                style={[styles.input, styles.textArea]}
-                placeholder="Tulis isi artikel di sini"
-                placeholderTextColor="#94A3B8"
-                multiline
-                numberOfLines={6}
-                textAlignVertical="top"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Thumbnail</Text>
-              <TouchableOpacity onPress={pickImage} style={styles.imageUploadButton}>
-                {thumbnail ? (
-                  <Image source={{ uri: thumbnail.uri }} style={styles.uploadedImage} resizeMode="cover" />
-                ) : (
-                  <View style={styles.uploadPlaceholder}>
-                    <Ionicons name="image-outline" size={32} color="#94A3B8" />
-                    <Text style={styles.uploadText}>Pilih Gambar</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity 
-              style={styles.submitButton} 
-              onPress={handleSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.submitButtonText}>Publish Artikel</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      )}
-    </SafeAreaView>
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.submitButtonText}>Submit</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -221,10 +217,6 @@ const styles = StyleSheet.create({
     ...typography.header.medium,
     color: '#222',
     textAlign: 'center',
-  },
-  content: {
-    flex: 1,
-    backgroundColor: '#fff',
   },
   formContainer: {
     padding: spacing.lg,
@@ -260,7 +252,7 @@ const styles = StyleSheet.create({
   picker: {
     height: 48,
     color: "#222",
-    backgroundColor: "transparent",
+    backgroundColor: "transparent", // Remove white box look
     ...typography.body.medium.regular,
   },
   textArea: {
@@ -300,26 +292,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   submitButtonText: {
-    ...typography.body.medium.semiBold,
-    color: '#fff',
-  },
-  successContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: spacing.lg,
-  },
-  successIconContainer: {
-    marginBottom: spacing.lg,
-  },
-  successText: {
-    ...typography.header.medium,
-    color: '#222E3A',
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-  },
-  backButtonText: {
     ...typography.body.medium.semiBold,
     color: '#fff',
   },

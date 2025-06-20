@@ -1,6 +1,7 @@
-import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
-import { useRouter } from "expo-router"
-import { useState } from "react"
+import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Image,
   SafeAreaView,
@@ -9,37 +10,46 @@ import {
   Text,
   TouchableOpacity,
   View
-} from "react-native"
-import { Pet } from '../components/types'
-import { typography } from './theme'
+} from "react-native";
+import { Pet } from '../components/types';
+import { typography } from './theme';
 
 export default function CatDetailScreen() {
   const router = useRouter()
 
   
-  const [cat] = useState<Pet>({
-    id: 1,
-    name: "Milo",
-    age: "2 tahun",
-    gender: "Laki-laki",
-    image: require("../assets/images/cats/wili.png"),
-    location: "Jakarta",
-    vaccinated: true,
-    sterilized: false,
-    breed: "Kucing Domestik",
-    color: "Hitam - Putih",
-    status: 'Tersedia'
-  })
+const [cat, setCat] = useState<Pet | null>(null);
+
+useEffect(() => {
+  const loadSelectedPet = async () => {
+    try {
+      const storedPet = await AsyncStorage.getItem("selectedPet");
+      if (storedPet) {
+        const parsedPet = JSON.parse(storedPet);
+        setCat(parsedPet);
+      }
+    } catch (error) {
+      console.error("Gagal memuat data kucing:", error);
+    }
+  };
+
+  loadSelectedPet();
+}, []);
+
+if (!cat) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={{ textAlign: 'center', marginTop: 100 }}>
+        Memuat data kucing...
+      </Text>
+    </SafeAreaView>
+  );
+}
+
 
   const breed = 'Kucing Domestik'
   const color = 'Hitam - Putih'
   const description = 'Dulu ditemuin di jalan, sekarang cari rumah aman. Agak malu-malu.'
-  const poster = {
-    name: 'Satria',
-    role: 'MeowCare Member',
-    avatar: require('../assets/images/mini-avatar.png'),
-    date: '25 Mei, 2025',
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -90,22 +100,6 @@ export default function CatDetailScreen() {
               </View>
               <Text style={styles.pillLabel}>{color}</Text>
             </View>
-          </View>
-
-          {/* About Section */}
-          <View style={styles.aboutSection}>
-            <Text style={styles.aboutTitle}>Tentang {cat.name}</Text>
-            <Text style={styles.aboutText}>{description}</Text>
-          </View>
-
-          {/* Posted By */}
-          <View style={styles.postedBySection}>
-            <Image source={poster.avatar} style={styles.posterImage} />
-            <View style={styles.posterInfo}>
-              <Text style={styles.posterName}>{poster.name}</Text>
-              <Text style={styles.posterRole}>{poster.role}</Text>
-            </View>
-            <Text style={styles.postDate}>{poster.date}</Text>
           </View>
         </View>
       </ScrollView>

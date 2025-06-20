@@ -35,20 +35,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="article-admin"
-        options={{
-          title: 'Artikel',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="newspaper-outline" size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="list-report"
         options={{
           title: 'Laporan',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="alert-circle-outline" size={28} color={color} />
+            <Ionicons name="document-text-outline" size={28} color={color} />
           ),
         }}
       />
@@ -57,7 +48,16 @@ export default function TabLayout() {
         options={{
           title: 'Adopsi',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="add-circle-outline" size={28} color={color} />
+            <Ionicons name="paw-outline" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="article-admin"
+        options={{
+          title: 'Artikel',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="book-outline" size={28} color={color} />
           ),
         }}
       />

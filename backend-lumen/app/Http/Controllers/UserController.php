@@ -113,7 +113,7 @@ class UserController extends Controller
     {
         // Validasi file dengan nama field 'photo' (pastikan sesuai nama input di frontend)
         $validator = Validator::make($request->all(), [
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:10048', // max 2MB
         ]);
 
         if ($validator->fails()) {
@@ -178,13 +178,18 @@ class UserController extends Controller
             'Email',
             'Nomor_HP',
             'Alamat',
-            'Password'
+            'Password',
+            'Foto_Profil' // tambahkan di sini agar bisa diterima sebagai string juga
         ]);
 
-        if (isset($data['Password'])) {
+        // Jika Password ingin diubah
+        if (!empty($data['Password'])) {
             $data['Password'] = Hash::make($data['Password']);
+        } else {
+            unset($data['Password']); // jangan update jika kosong
         }
 
+        // Tangani jika Foto_Profil dikirim dalam bentuk file (opsional jika masih digunakan di tempat lain)
         if ($request->hasFile('Foto_Profil')) {
             $file = $request->file('Foto_Profil');
             $filename = uniqid() . '.' . $file->getClientOriginalExtension();
@@ -198,32 +203,43 @@ class UserController extends Controller
             $data['Foto_Profil'] = 'images/profile/' . $filename;
         }
 
+        // Jika Foto_Profil dikirim sebagai string (bukan file)
+        if ($request->filled('Foto_Profil') && is_string($request->Foto_Profil)) {
+            $data['Foto_Profil'] = $request->Foto_Profil;
+        }
+
         $user->update($data);
 
-        return response()->json($user);
+        return response()->json([
+            'message' => 'Profil berhasil diperbarui',
+            'user' => $user
+        ]);
     }
 
-    public function changeRole(Request $request)
-    {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'User not authenticated'], 401);
-        }
 
-        if (!$user) {
-            return response()->json(['message' => 'User not authenticated'], 401);
-        }
-
-        if ($user->Role === 'Owner') {
-            return response()->json(['message' => 'Role already Owner, cannot be changed again'], 403);
-        }
-
-        $user->Role = 'Owner';
-        $user->save();
-
-        return response()->json(['message' => 'Role updated to Owner.', 'user' => $user]);
+public function changeRole(Request $request)
+{
+    try {
+        $user = JWTAuth::parseToken()->authenticate();
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'User not authenticated'], 401);
     }
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    // Jika sudah Owner, tidak lakukan apa-apa tapi tetap sukses
+    if ($user->Role === 'Owner') {
+        return response()->json(['message' => 'User already has Owner role. No changes made.', 'user' => $user], 200);
+    }
+
+    $user->Role = 'Owner';
+    $user->save();
+
+    return response()->json(['message' => 'Role updated to Owner.', 'user' => $user]);
+}
+
     
     public function delete(Request $request)
     {

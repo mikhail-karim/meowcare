@@ -1,15 +1,45 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
+import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import React, { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { API_BASE_URL } from '../components/types';
 import { container, spacing, typography } from './theme';
+
   
 export default function AddArticleForm() {
   const router = useRouter();
   const navigation = useNavigation();
   const { article } = useLocalSearchParams();
+
+useEffect(() => {
+  const loadArticle = async () => {
+    try {
+      const stored = await AsyncStorage.getItem('selectedArticle');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const articleId = parsed.id || parsed.Artikel_ID;
+
+        const response = await axios.get(`${API_BASE_URL}/artikel/${articleId}`);
+        const data = response.data;
+
+        setJudul(data.Judul);
+        setKategori(data.Kategori);
+        setArtikel(data.Artikel);
+        if (data.Thumbnail) {
+          setThumbnail({ uri: `${API_BASE_URL}/${data.Thumbnail}` } as any);
+        }
+      }
+    } catch (err) {
+      console.error('Gagal memuat artikel:', err);
+    }
+  };
+
+  loadArticle();
+}, []);
 
   let articleToEdit = null;
   try {
@@ -48,18 +78,45 @@ export default function AddArticleForm() {
     }
   };
 
-  const handleSubmit = () => {
-    const payload = {
+const handleSubmit = async () => {
+  setIsSubmitting(true);
+
+  try {
+    const stored = await AsyncStorage.getItem('selectedArticle');
+    const token = await AsyncStorage.getItem('token');
+
+    if (!stored || !token) throw new Error("Data tidak ditemukan.");
+
+    const parsed = JSON.parse(stored);
+    const articleId = parsed.id || parsed.Artikel_ID;
+
+    const payload: any = {
       Judul: judul,
       Kategori: kategori,
       Artikel: artikel,
-      Thumbnail: thumbnail?.uri,
     };
 
-    if (articleToEdit?.Artikel_ID) {
-      console.log('Updating article:', articleToEdit.Artikel_ID, payload);
+
+    if (thumbnail && thumbnail.uri && !thumbnail.uri.startsWith(API_BASE_URL)) {
+      payload['Thumbnail'] = thumbnail.uri;
     }
-  };
+
+    await axios.put(`${API_BASE_URL}/artikel/${articleId}`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    Alert.alert("Artikel berhasil diperbarui");
+    router.push('/(admin)/article-admin');
+  } catch (err) {
+    console.error("Gagal update artikel:", err);
+    Alert.alert("Gagal update artikel");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -68,7 +125,7 @@ export default function AddArticleForm() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.push('/(admin)/article-admin')}>
           <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Tambah Artikel</Text>
+        <Text style={styles.headerTitle}>Edit Artikel</Text>
       </View>
 
       <View style={styles.formContainer}>

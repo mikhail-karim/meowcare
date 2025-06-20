@@ -3,14 +3,13 @@ import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { API_BASE_URL } from '../components/types';
 import { colors, container, spacing, typography } from './theme';
 
 export default function SignInScreen() {
   const router = useRouter();
   const [Email, setEmail] = useState('');
   const [Password, setPassword] = useState('');
-
-  const API_BASE_URL = 'http://192.168.94.249:8000';
 
   const handleSignIn = async () => {
     if (!Email || !Password) {
@@ -26,17 +25,21 @@ export default function SignInScreen() {
 
       const data = response.data;
 
-      await AsyncStorage.setItem('token', data.token);
-      await AsyncStorage.setItem('nama_lengkap', data.user.Nama_Lengkap);
+    await AsyncStorage.setItem('token', data.token);
+
+    if (Email.toLowerCase() === 'admin@admin.com') {
+      await AsyncStorage.setItem('username', data.admin.Username);
+      await AsyncStorage.setItem('id', String(data.admin.Admin_ID)); // ✅ Fix
+      router.push('/(admin)/dashboard-admin');
+    } else {
       await AsyncStorage.setItem('username', data.user.Username);
-      
-      if (Email.toLowerCase() === 'admin@admin.com') {
-        await AsyncStorage.setItem('id', data.admin.Admin_ID);
-        router.push('/(admin)/dashboard-admin');
-      } else {
-        await AsyncStorage.setItem('id', data.user.User_ID);
-        router.push('/home');
-      }
+      await AsyncStorage.setItem('foto', data.user.Foto_Profil);
+      await AsyncStorage.setItem('role', data.user.Role);
+      await AsyncStorage.setItem('nama_lengkap', data.user.Nama_Lengkap);
+      await AsyncStorage.setItem('id', String(data.user.User_ID)); // ✅ Fix
+      router.push('/home');
+    }
+
     } catch (error) {
       if (axios.isAxiosError(error)) {
         Alert.alert('Login Failed', error.response?.data?.message || 'Gagal login, periksa kembali Email dan Password Anda.');

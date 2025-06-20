@@ -13,7 +13,8 @@ class PetController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pet::with(['ras', 'warna', 'user']);
+        $query = Pet::with(['ras', 'warna', 'user'])
+                    ->where('Adopted', 0); // Filter pets dengan Adopted = 0 atau false
 
         if ($request->has('search')) {
             $query->where('Nama', 'like', '%' . $request->search . '%');
@@ -21,6 +22,7 @@ class PetController extends Controller
 
         return response()->json($query->get());
     }
+
 
     public function show($id)
     {
@@ -197,5 +199,31 @@ class PetController extends Controller
 
         $pet->delete();
         return response()->json(['message' => 'Pet deleted successfully']);
+    }
+
+    // GET /pets/user/{userId}
+    public function getByUserId($userId)
+    {
+        $pets = Pet::where('User_ID', $userId)
+            ->with(['ras', 'warna']) // Include relasi jika diperlukan
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $pets
+        ]);
+    }
+
+    // GET /pets/admin/{adminId}
+    public function getByAdminId($adminId)
+    {
+        $pets = Pet::where('Admin_ID', $adminId)
+            ->with(['ras', 'warna']) // Include relasi jika diperlukan
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $pets
+        ]);
     }
 }

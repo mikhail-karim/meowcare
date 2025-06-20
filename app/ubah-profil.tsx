@@ -8,11 +8,11 @@ import { container, spacing, typography } from "./theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
+import { API_BASE_URL } from '../components/types';
 
 export default function EditProfilScreen() {
   const router = useRouter();
 
-  const API_BASE_URL = 'http://192.168.94.249:8000';
 
   const [name, setName] = useState("Satria");
   const [username, setUsername] = useState("");
@@ -20,6 +20,8 @@ export default function EditProfilScreen() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
+
 
   // Function to fetch user data by ID and populate form fields
   const loadUserProfile = async () => {
@@ -63,48 +65,57 @@ export default function EditProfilScreen() {
 
 
 const handleChoosePhoto = async () => {
+  console.log("📸 Tombol pilih foto ditekan");
+
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    mediaTypes: ImagePicker.MediaTypeOptions.Images, // Pakai ini dulu (versi lama)
     allowsEditing: true,
     aspect: [1, 1],
     quality: 1,
-    base64: true, // ⬅️ Tambahkan ini agar kita dapat base64
+    base64: false, // jangan base64, cukup file URI
   });
 
-  if (!result.canceled) {
+  if (!result.canceled && result.assets.length > 0) {
     const selectedAsset = result.assets[0];
-    setImageUri(selectedAsset.uri);
+    const localUri = selectedAsset.uri;
+
+    console.log("✅ URI gambar:", localUri);
+
+    const filename = localUri.split("/").pop() || `photo_${Date.now()}.jpg`;
+    const match = /\.(\w+)$/.exec(filename);
+    const ext = match?.[1]?.toLowerCase() || "jpg";
+    const mimeType = `image/${ext === "jpg" ? "jpeg" : ext}`;
+
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      Alert.alert("Error", "Token tidak ditemukan. Silakan login ulang.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("photo", {
+      uri: localUri,
+      name: filename,
+      type: mimeType,
+    } as any);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        Alert.alert("Error", "Token tidak ditemukan. Silakan login ulang.");
-        return;
-      }
+    const response = await axios.post(`${API_BASE_URL}/users/upload_photo`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      const fileName = selectedAsset.fileName || `photo_${Date.now()}.jpg`;
-      const mimeType = selectedAsset.type || "image/jpeg";
-      const base64Image = selectedAsset.base64;
+    console.log("✅ Upload success:", response.data);
+    Alert.alert("Sukses", "Foto berhasil diupload!");
 
-      // Konversi base64 ke file
-      const formData = new FormData();
-      formData.append("photo", {
-        uri: `data:${mimeType};base64,${base64Image}`,
-        name: fileName,
-        type: mimeType,
-      } as any);
+    // Simpan path relatif dari server ke state
+    setUploadedPhotoPath(response.data.file_path);
+    setImageUri(`${API_BASE_URL}/${response.data.file_path}`); // preview
 
-      const response = await axios.post(`${API_BASE_URL}/users/upload_photo`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      console.log("Upload success:", response.data);
-      setImageUri(`${API_BASE_URL}/${response.data.file_path}`);
     } catch (error: any) {
-      console.error("Upload gagal:", error.response?.data || error.message);
+      console.error("❌ Upload gagal:", error.response?.data || error.message);
       Alert.alert("Gagal", error.response?.data?.message || "Gagal upload gambar.");
     }
   }
@@ -121,11 +132,7 @@ const handleSaveProfile = async () => {
       return;
     }
 
-    // Ekstrak path relatif dari imageUri
-    let relativePhotoPath = null;
-    if (imageUri && imageUri.startsWith(`${API_BASE_URL}/`)) {
-      relativePhotoPath = imageUri.replace(`${API_BASE_URL}/`, '');
-    }
+    let relativePhotoPath = uploadedPhotoPath; // Ambil dari upload terakhir
 
     const payload: any = {
       Nama_Lengkap: name,
