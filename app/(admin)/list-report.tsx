@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import CatFound from '../../assets/svg/CatFound.svg';
 import { API_BASE_URL, Pet } from "../../components/types";
 import { colors, container, spacing, typography } from "../theme";
 
@@ -98,7 +99,10 @@ const handleReject = async (id: number) => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.catList}>
           {cats.length === 0 ? (
-            <Text style={styles.emptyText}>Belum ada laporan masuk.</Text>
+            <View style={styles.emptyContainer}>
+              <CatFound width={350} height={350} />
+              <Text style={styles.emptyText}>Belum ada laporan</Text>
+            </View>
           ) : (
             cats.map((pet) => (
               <View key={pet.id} style={styles.card}>
@@ -257,10 +261,16 @@ status: {
 
 emptyText: {
   textAlign: "center",
-  fontSize: 16,
-  color: "#94A3B8",
+  color: colors.text.primary,
   marginTop: spacing.lg,
+  ...typography.body.large.regular,
 },
 
+emptyContainer: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: spacing.xxl,
+  marginBottom: spacing.xxl,
+},
 
 });

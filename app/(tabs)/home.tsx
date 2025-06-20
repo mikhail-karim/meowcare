@@ -289,6 +289,39 @@ export default function HomeScreen() {
               </View>
             </View>
           </View>
+
+          {/* Social & Community Section */}
+          <View style={styles.socialContainer}>
+            <Text style={styles.socialTitle}>Komunitas Kami</Text>
+
+            {/* Media Sosial */}
+            <Text style={styles.socialGroupTitle}>Media Sosial</Text>
+            <TouchableOpacity 
+              style={styles.socialItem}
+              onPress={() => Linking.openURL('https://www.instagram.com/home_kpkts/?hl=en')}
+            >
+              <Ionicons name="logo-instagram" size={24} color={colors.primary} />
+              <Text style={styles.socialLinkText}>Home Care KPKTS</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.socialItem}
+              onPress={() => Linking.openURL('https://web.facebook.com/KPKTSurabaya/?_rdc=1&_rdr#')}
+            >
+              <Ionicons name="logo-facebook" size={24} color={colors.primary} />
+              <Text style={styles.socialLinkText}>Komunitas Penyelamat Kucing Terlantar Surabaya (KPKTS)</Text>
+            </TouchableOpacity>
+
+            {/* Grup Komunitas */}
+            <Text style={[styles.socialGroupTitle, { marginTop: 16 }]}>Grup Komunitas</Text>
+            <TouchableOpacity 
+              style={styles.socialItem}
+              onPress={() => Linking.openURL('https://web.facebook.com/groups/146527835777692/?_rdc=1&_rdr#')}
+            >
+              <Ionicons name="people-outline" size={24} color={colors.primary} />
+              <Text style={styles.socialLinkText}>Facebook Group KPKTS</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
 
@@ -611,5 +644,34 @@ const styles = StyleSheet.create({
   copyFeedbackText: {
     ...typography.body.small.regular,
     color: colors.background,
+  },
+  
+  /* --- Social & Community Section Styles --- */
+  socialContainer: {
+    marginBottom: 32,
+    backgroundColor: colors.surface.light,
+    borderRadius: 16,
+    padding: 20,
+  },
+  socialTitle: {
+    ...typography.header.large,
+    color: colors.text.primary,
+    marginBottom: 12,
+  },
+  socialGroupTitle: {
+    ...typography.header.small,
+    color: colors.text.secondary,
+    marginBottom: 8,
+  },
+  socialItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  socialLinkText: {
+    ...typography.body.medium.regular,
+    color: colors.text.primary,
+    flexShrink: 1,
   },
 }) 
