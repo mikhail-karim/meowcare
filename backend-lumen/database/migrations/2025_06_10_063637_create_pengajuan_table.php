@@ -11,7 +11,7 @@ class CreatePengajuanTable extends Migration
         Schema::create('pengajuans', function (Blueprint $table) {
             $table->id('Pengajuan_ID');
             $table->text('Alasan');
-            $table->boolean('Approved')->default(false);
+            $table->tinyInteger('Approved')->default(0); // 0=pending, 1=approved, 2=rejected
             $table->unsignedBigInteger('User_ID');
             $table->unsignedBigInteger('Pet_ID');
             $table->timestamps();

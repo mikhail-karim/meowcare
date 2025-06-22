@@ -34,12 +34,12 @@ class KonfirmasiController extends Controller
             return response()->json(['message' => 'Pengajuan tidak ditemukan'], 404);
         }
 
-        if ($pengajuan->Approved) {
-            return response()->json(['message' => 'Pengajuan sudah dikonfirmasi.'], 409);
+        if ($pengajuan->Approved !== Pengajuan::STATUS_PENDING) {
+            return response()->json(['message' => 'Pengajuan sudah diproses.'], 409);
         }
 
         // Tandai pengajuan sebagai approved
-        $pengajuan->Approved = true;
+        $pengajuan->Approved = Pengajuan::STATUS_APPROVED;
         $pengajuan->save();
 
         // Tandai hewan sebagai adopted
@@ -68,7 +68,7 @@ class KonfirmasiController extends Controller
         // Optional: Batalkan status approved jika dihapus
         $pengajuan = $konfirmasi->pengajuan;
         if ($pengajuan) {
-            $pengajuan->Approved = false;
+            $pengajuan->Approved = Pengajuan::STATUS_PENDING;
             $pengajuan->save();
         }
 

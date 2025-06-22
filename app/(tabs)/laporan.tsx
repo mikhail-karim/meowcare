@@ -18,6 +18,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native"
+import CatFound from '../../assets/svg/CatFound.svg'
 import { API_BASE_URL } from '../../components/types'
 import { container, spacing, typography } from '../theme'
 
@@ -198,6 +199,10 @@ export default function LaporanScreen() {
       ) : (
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.formContainer}>
+            {/* Illustration */}
+            <View style={styles.catIllustrationWrapper}>
+              <CatFound width={320} height={320} />
+            </View>
             <Text style={styles.formTitle}>Ketemu kucing? Ayo laporin di sini!</Text>
             
             {/* Description Input */}
@@ -283,12 +288,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   formContainer: {
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
   formTitle: {
     ...typography.header.medium,
     color: "#222",
     marginBottom: spacing.xl,
+  },
+  catIllustrationWrapper: {
+    alignItems: 'center',
   },
   inputContainer: {
     marginBottom: spacing.lg,

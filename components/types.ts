@@ -3,7 +3,7 @@ export type Pet = {
   name: string;
   location: string;
   gender: string;
-  age: string;
+  age: number;
   image: any;
   vaccinated?: boolean;
   sterilized?: boolean;
@@ -22,4 +22,4 @@ export type Article = {
   image: any;
 };
 
-export const API_BASE_URL = 'http://192.168.0.108:8000';
+export const API_BASE_URL = 'http://192.168.28.94:8000';

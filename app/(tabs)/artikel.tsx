@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ImageBackground,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -14,7 +15,7 @@ import {
 } from "react-native";
 import { ArticleCard } from "../../components/ArticleCard";
 import { API_BASE_URL, Article } from "../../components/types";
-import { container, spacing, typography } from "../theme";
+import { colors, container, spacing, typography } from "../theme";
 
 export default function ArticleScreen() {
   const router = useRouter();
@@ -121,15 +122,21 @@ const renderArticleCard = (article: Article, index: number) => (
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.bannerCard}>
-          <Text style={styles.bannerTitle}>Pahami pentingnya sterilisasi</Text>
-          <TouchableOpacity
-            style={styles.bannerButton}
-            onPress={() => router.push("../sterilisasi")}
-          >
-            <Text style={styles.bannerButtonText}>Pelajari</Text>
-          </TouchableOpacity>
-        </View>
+        <ImageBackground
+          source={require("../../assets/images/sterilisasi.jpeg")}
+          style={styles.bannerCard}
+          imageStyle={{ borderRadius: 16 }}
+        >
+          <View style={styles.bannerOverlay}>
+            <Text style={styles.bannerTitle}>Pahami pentingnya sterilisasi</Text>
+            <TouchableOpacity
+              style={styles.bannerButton}
+              onPress={() => router.push("../sterilisasi")}
+            >
+              <Text style={styles.bannerButtonText}>Pelajari</Text>
+            </TouchableOpacity>
+          </View>
+        </ImageBackground>
 
         {/* Tab Filter */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
@@ -206,13 +213,12 @@ const styles = StyleSheet.create({
   bannerCard: {
     marginHorizontal: spacing.lg,
     marginBottom: spacing.lg,
-    padding: spacing.lg,
-    backgroundColor: "#E2E8F0",
     borderRadius: 16,
+    overflow: 'hidden',
   },
   bannerTitle: {
     ...typography.body.large.semiBold,
-    color: "#1E293B",
+    color: "#fff",
     marginBottom: spacing.sm,
   },
   bannerButton: {
@@ -272,5 +278,11 @@ const styles = StyleSheet.create({
   articleList: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
+  },
+  bannerOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    padding: spacing.lg,
+    borderRadius: 16,
   },
 });

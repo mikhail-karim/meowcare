@@ -5,7 +5,7 @@ import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_BASE_URL } from '../components/types';
 import { container, spacing, typography } from './theme';
 
@@ -124,72 +124,74 @@ export default function AddArticleForm() {
   }, [navigation, resetForm])
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        {/* <TouchableOpacity style={styles.backButton} onPress={() => router.back()}> */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.push('/(admin)/article-admin')}>
           <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Tambah Artikel</Text>
       </View>
 
-      <View style={styles.formContainer}>
-        <Text style={styles.formTitle}>Informasi Artikel</Text>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.formContainer}>
+          <Text style={styles.formTitle}>Informasi Artikel</Text>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Judul</Text>
-          <TextInput
-            value={judul}
-            onChangeText={setJudul}
-            style={styles.input}
-            placeholder="Masukkan judul artikel"
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Kategori</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={kategori}
-                onValueChange={(itemValue) => setKategori(itemValue)}
-                mode="dropdown" // Only affects Android
-                style={styles.picker}
-              >
-              <Picker.Item label="Edukasi" value="edukasi" />
-              <Picker.Item label="Kegiatan" value="kegiatan" />
-              </Picker>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Judul</Text>
+            <TextInput
+              value={judul}
+              onChangeText={setJudul}
+              style={styles.input}
+              placeholder="Masukkan judul artikel"
+            />
           </View>
-        </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Artikel</Text>
-          <TextInput
-            value={artikel}
-            onChangeText={setArtikel}
-            style={[styles.input, styles.textArea]}
-            placeholder="Tulis isi artikel di sini"
-            multiline
-          />
-        </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Kategori</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={kategori}
+                  onValueChange={(itemValue) => setKategori(itemValue)}
+                  mode="dropdown" // Only affects Android
+                  style={styles.picker}
+                >
+                <Picker.Item label="Edukasi" value="edukasi" />
+                <Picker.Item label="Kegiatan" value="kegiatan" />
+                </Picker>
+            </View>
+          </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Thumbnail</Text>
-          <TouchableOpacity onPress={pickImage} style={styles.imageUploadButton}>
-            {thumbnail ? (
-              <Image source={{ uri: thumbnail.uri }} style={styles.uploadedImage} />
-            ) : (
-              <View style={styles.uploadPlaceholder}>
-                <Text style={styles.uploadText}>Pilih Gambar</Text>
-              </View>
-            )}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Artikel</Text>
+            <TextInput
+              value={artikel}
+              onChangeText={setArtikel}
+              style={[styles.input, styles.textArea]}
+              placeholder="Tulis isi artikel di sini"
+              multiline
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Thumbnail</Text>
+            <TouchableOpacity onPress={pickImage} style={styles.imageUploadButton}>
+              {thumbnail ? (
+                <Image source={{ uri: thumbnail.uri }} style={styles.uploadedImage} />
+              ) : (
+                <View style={styles.uploadPlaceholder}>
+                  <Text style={styles.uploadText}>Pilih Gambar</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitButtonText}>Submit</Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -217,6 +219,10 @@ const styles = StyleSheet.create({
     ...typography.header.medium,
     color: '#222',
     textAlign: 'center',
+  },
+  content: {
+    flex: 1,
+    backgroundColor: '#fff',
   },
   formContainer: {
     padding: spacing.lg,

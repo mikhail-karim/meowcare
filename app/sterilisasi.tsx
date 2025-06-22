@@ -2,14 +2,14 @@ import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-    Image,
-    Linking,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { colors, spacing, typography } from "./theme";
 
@@ -134,9 +134,9 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   headerRow: {
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 8,
   },
   title: {
@@ -146,7 +146,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface.medium,
     paddingVertical: 4,
     paddingHorizontal: 10,
-    borderRadius: 12,
+    marginVertical: 12,
+    borderRadius: 16,
   },
   categoryText: {
     ...typography.body.small.medium,

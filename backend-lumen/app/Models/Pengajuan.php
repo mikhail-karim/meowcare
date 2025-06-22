@@ -10,6 +10,11 @@ class Pengajuan extends Model
     protected $primaryKey = 'Pengajuan_ID';
     public $timestamps = true;
 
+    // Status constants
+    const STATUS_PENDING = 0;
+    const STATUS_APPROVED = 1;
+    const STATUS_REJECTED = 2;
+
     protected $fillable = [
         'Alasan',
         'Approved',
@@ -25,5 +30,21 @@ class Pengajuan extends Model
     public function pet()
     {
         return $this->belongsTo(Pet::class, 'Pet_ID');
+    }
+
+    // Helper methods for status
+    public function isPending()
+    {
+        return $this->Approved === self::STATUS_PENDING;
+    }
+
+    public function isApproved()
+    {
+        return $this->Approved === self::STATUS_APPROVED;
+    }
+
+    public function isRejected()
+    {
+        return $this->Approved === self::STATUS_REJECTED;
     }
 }

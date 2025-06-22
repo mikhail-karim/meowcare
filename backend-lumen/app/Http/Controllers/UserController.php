@@ -47,6 +47,10 @@ class UserController extends Controller
         $data['Password'] = Hash::make($data['Password']);
         $data['Role'] = 'Adopter';
 
+        // Set default foto profil
+        $data['Foto_Profil'] = "images/profile/default.jpg";
+
+        // Jika ada file foto yang diupload
         if ($request->hasFile('Foto_Profil')) {
             $file = $request->file('Foto_Profil');
             $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
@@ -60,8 +64,6 @@ class UserController extends Controller
 
             $file->move($path, $filename);
             $data['Foto_Profil'] = "images/{$folder}/{$filename}";
-        } else {
-            $data['Foto_Profil'] = "images/profile/default.jpg";
         }
 
         $user = User::create($data);

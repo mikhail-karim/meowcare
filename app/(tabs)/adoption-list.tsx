@@ -29,12 +29,13 @@ export default function AdoptionListScreen() {
     const fetchPets = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/pets`);
+        
         const petsFromApi = response.data.map((item: any) => ({
           id: item.Pet_ID,
           name: item.Nama,
-          location: item.user?.Alamat ?? "Lokasi tidak tersedia",
+          location: item.user?.Alamat ?? "Lokasi tidak diketahui",
           gender: item.Jenis_Kelamin === "Laki-Laki" ? "Laki-laki" : "Perempuan",
-          age: parseInt(item.Umur),
+          age: `${parseInt(item.Umur)} bulan`,
           image: { uri: `${API_BASE_URL}/${item.Foto}` },
           vaccinated: Boolean(item.Divaksin),
           sterilized: Boolean(item.Sterilisasi),
@@ -158,7 +159,6 @@ const styles = StyleSheet.create({
     ...container.content,
   },
   banner: {
-    height: 90,
     marginHorizontal: spacing.lg,
     borderRadius: 16,
     overflow: "hidden",
@@ -170,7 +170,8 @@ const styles = StyleSheet.create({
   bannerOverlay: {
     flex: 1,
     backgroundColor: colors.overlay,
-    padding: spacing.md,
+    padding: spacing.lg,
+    borderRadius: 16,
   },
   bannerText: {
     ...typography.body.large.semiBold,

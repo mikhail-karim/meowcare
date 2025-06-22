@@ -15,6 +15,7 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -35,6 +36,8 @@ export default function LaporanScreen() {
     ras: '',
     warna: '',
     image: null as string | null,
+    vaccinated: false,
+    sterilized: false,
   }
 
   const [formData, setFormData] = useState(initialFormState)
@@ -142,6 +145,8 @@ const pickImage = async () => {
       form.append('Jenis_Kelamin', formData.jeniskelamin);
       form.append('Ras_ID', rasId.toString());
       form.append('Warna_ID', warnaId.toString());
+      form.append('Divaksin', formData.vaccinated ? '1' : '0');
+      form.append('Sterilisasi', formData.sterilized ? '1' : '0');
 
       if (formData.image) {
         const uriParts = formData.image.split('.');
@@ -256,13 +261,15 @@ const pickImage = async () => {
             {/* Jenis Kelamin */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Jenis Kelamin</Text>
-              <TextInput
+              <Picker
+                selectedValue={formData.jeniskelamin}
+                onValueChange={(value) => setFormData({ ...formData, jeniskelamin: value })}
                 style={styles.input}
-                placeholder="Laki-laki / Perempuan"
-                value={formData.jeniskelamin}
-                onChangeText={(text) => setFormData({ ...formData, jeniskelamin: text })}
-                placeholderTextColor="#94A3B8"
-              />
+              >
+                <Picker.Item label="Pilih Jenis Kelamin" value="" />
+                <Picker.Item label="Laki-Laki" value="Laki-Laki" />
+                <Picker.Item label="Perempuan" value="Perempuan" />
+              </Picker>
             </View>
 
           {/* Ras Kucing - Dropdown */}
@@ -297,7 +304,37 @@ const pickImage = async () => {
             </Picker>
           </View>
 
+          {/* Status Vaksinasi */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Status Vaksinasi</Text>
+            <View style={styles.switchContainer}>
+              <Text style={styles.switchLabel}>
+                {formData.vaccinated ? 'Sudah Divaksin' : 'Belum Divaksin'}
+              </Text>
+              <Switch
+                value={formData.vaccinated}
+                onValueChange={(value) => setFormData({ ...formData, vaccinated: value })}
+                trackColor={{ false: '#CBD5E1', true: '#222E3A' }}
+                thumbColor={formData.vaccinated ? '#fff' : '#f4f3f4'}
+              />
+            </View>
+          </View>
 
+          {/* Status Sterilisasi */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Status Sterilisasi</Text>
+            <View style={styles.switchContainer}>
+              <Text style={styles.switchLabel}>
+                {formData.sterilized ? 'Sudah Disteril' : 'Belum Disteril'}
+              </Text>
+              <Switch
+                value={formData.sterilized}
+                onValueChange={(value) => setFormData({ ...formData, sterilized: value })}
+                trackColor={{ false: '#CBD5E1', true: '#222E3A' }}
+                thumbColor={formData.sterilized ? '#fff' : '#f4f3f4'}
+              />
+            </View>
+          </View>
 
             {/* Foto Kucing */}
             <View style={styles.inputContainer}>
@@ -471,5 +508,14 @@ const styles = StyleSheet.create({
   homeButtonText: {
     ...typography.body.medium.semiBold,
     color: '#fff',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  switchLabel: {
+    ...typography.body.medium.regular,
+    color: "#222",
   },
 }) 

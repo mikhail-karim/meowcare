@@ -93,7 +93,7 @@ export default function ProfilScreen() {
           gender: item.Pet.Jenis_Kelamin,
           age: `${item.Pet.Umur} bulan`,
           location: address,
-          status: item.Approved === 0 ? "pending" : "approved",
+          status: item.Approved === 0 ? "pending" : item.Approved === 1 ? "approved" : "rejected",
         }));
 
         // Gabungkan hasil
@@ -151,7 +151,7 @@ export default function ProfilScreen() {
       return ["available", "adopted"].includes(pet.status);
     }
     if (activeTab === "Adopsi") {
-      return ["approved", "pending"].includes(pet.status);
+      return ["approved", "pending", "rejected"].includes(pet.status);
     }
     return false;
   });

@@ -30,6 +30,12 @@ class User extends Model implements AuthenticatableContract, JWTSubject
         'Password',
     ];
 
+    protected $casts = [
+        'User_ID' => 'integer',
+        'Nomor_HP' => 'string',
+        'Alamat' => 'string',
+    ];
+
     public function getJWTIdentifier()
     {
         return $this->User_ID;

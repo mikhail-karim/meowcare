@@ -3,7 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import LottieView from 'lottie-react-native';
+import { useEffect, useRef, useState } from "react";
 import { Image, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { API_BASE_URL } from '../../components/types';
 import { colors, container, typography } from '../theme';
@@ -12,6 +13,18 @@ export default function HomeScreen() {
   const router = useRouter()
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false)
   const [showCopyFeedback, setShowCopyFeedback] = useState(false)
+  const [userName, setUserName] = useState('')
+  const animationRef = useRef<LottieView>(null)
+
+  useEffect(() => {
+    const loadUserName = async () => {
+      const name = await AsyncStorage.getItem('nama_lengkap')
+      if (name) {
+        setUserName(name)
+      }
+    }
+    loadUserName()
+  }, [])
 
   const handleProfilePress = () => {
   setIsProfileModalVisible(false);
@@ -44,7 +57,7 @@ export default function HomeScreen() {
 
   const handleWhatsAppRedirect = () => {
     // TODO: Replace with actual WhatsApp number
-    Linking.openURL('https://wa.me/6282228294844')
+    Linking.openURL('https://wa.me/6285233338292')
   }
 
   const handleCopyAccountNumber = async () => {
@@ -134,6 +147,20 @@ export default function HomeScreen() {
       {/* Scrollable Content */}
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
+          {userName && (
+            <View style={styles.greetingBubble}>
+              <Text style={styles.greetingText}>Halo {userName}!</Text>
+            </View>
+          )}
+          <View style={styles.animationContainer}>
+            <LottieView
+              ref={animationRef}
+              source={require('../../assets/animations/meong.json')}
+              autoPlay
+              loop
+              style={styles.animation}
+            />
+          </View>
           <Text style={styles.welcomeText}>Selamat Datang di MeowCare</Text>
           <Text style={styles.subtitleText}>
             Platform untuk membantu kucing terlantar menemukan rumah baru
@@ -289,6 +316,39 @@ export default function HomeScreen() {
               </View>
             </View>
           </View>
+
+          {/* Social & Community Section */}
+          <View style={styles.socialContainer}>
+            <Text style={styles.socialTitle}>Komunitas Kami</Text>
+
+            {/* Media Sosial */}
+            <Text style={styles.socialGroupTitle}>Media Sosial</Text>
+            <TouchableOpacity 
+              style={styles.socialItem}
+              onPress={() => Linking.openURL('https://www.instagram.com/home_kpkts/?hl=en')}
+            >
+              <Ionicons name="logo-instagram" size={24} color={colors.primary} />
+              <Text style={styles.socialLinkText}>Home Care KPKTS</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.socialItem}
+              onPress={() => Linking.openURL('https://web.facebook.com/KPKTSurabaya/?_rdc=1&_rdr#')}
+            >
+              <Ionicons name="logo-facebook" size={24} color={colors.primary} />
+              <Text style={styles.socialLinkText}>Komunitas Penyelamat Kucing Terlantar Surabaya (KPKTS)</Text>
+            </TouchableOpacity>
+
+            {/* Grup Komunitas */}
+            <Text style={[styles.socialGroupTitle, { marginTop: 16 }]}>Grup Komunitas</Text>
+            <TouchableOpacity 
+              style={styles.socialItem}
+              onPress={() => Linking.openURL('https://web.facebook.com/groups/146527835777692/?_rdc=1&_rdr#')}
+            >
+              <Ionicons name="people-outline" size={24} color={colors.primary} />
+              <Text style={styles.socialLinkText}>Facebook Group KPKTS</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
 
@@ -333,6 +393,17 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+  },
+  animationContainer: {
+    width: '100%',
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 30,
+  },
+  animation: {
+    width: 350,
+    height: 350,
   },
   welcomeText: {
     ...typography.header.large,
@@ -611,5 +682,45 @@ const styles = StyleSheet.create({
   copyFeedbackText: {
     ...typography.body.small.regular,
     color: colors.background,
+  },
+  greetingBubble: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 30,
+    alignSelf: 'flex-end',
+    marginBottom: 16,
+  },
+  greetingText: {
+    ...typography.body.medium.semiBold,
+    color: colors.background,
+  },
+  /* --- Social & Community Section Styles --- */
+  socialContainer: {
+    marginBottom: 32,
+    backgroundColor: colors.surface.light,
+    borderRadius: 16,
+    padding: 20,
+  },
+  socialTitle: {
+    ...typography.header.large,
+    color: colors.text.primary,
+    marginBottom: 12,
+  },
+  socialGroupTitle: {
+    ...typography.header.small,
+    color: colors.text.secondary,
+    marginBottom: 8,
+  },
+  socialItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  socialLinkText: {
+    ...typography.body.medium.regular,
+    color: colors.text.primary,
+    flexShrink: 1,
   },
 }) 

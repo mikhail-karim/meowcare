@@ -124,6 +124,11 @@ $router->group(['prefix' => 'konfirmasi', 'middleware' => ['jwt.auth', 'role:adm
     $router->delete('/{id}', 'KonfirmasiController@destroy');
 });
 
+// Reject
+$router->group(['prefix' => 'reject', 'middleware' => ['jwt.auth', 'role:admin']], function () use ($router) {
+    $router->post('/', 'RejectController@store');
+});
+
 // Artikel
 $router->group(['prefix' => 'artikel'], function () use ($router) {
     $router->get('/', 'ArtikelController@index');

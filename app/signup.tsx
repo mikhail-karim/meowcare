@@ -33,8 +33,8 @@ export default function SignUpScreen() {
       const data = response.data;
       await AsyncStorage.setItem('nama_lengkap', data.user.Nama_Lengkap);
       await AsyncStorage.setItem('username', data.user.Username);
-      await AsyncStorage.setItem('id', data.user.User_ID);
-      await AsyncStorage.setItem('alamat', data.user.Alamat);
+      await AsyncStorage.setItem('id', String(data.user.User_ID));
+      await AsyncStorage.setItem('alamat', data.user.Alamat || '');
       await AsyncStorage.setItem('foto', data.user.Foto_Profil);
       await AsyncStorage.setItem('role', data.user.Role);
       
