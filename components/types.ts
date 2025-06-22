@@ -22,4 +22,4 @@ export type Article = {
   image: any;
 };
 
-export const API_BASE_URL = 'http://192.168.28.94:8000';
+export const API_BASE_URL = 'http://192.168.100.158:8000';
