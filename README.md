@@ -1,50 +1,61 @@
-# Welcome to your Expo app 👋
+# 🐾 MeowCare – Aplikasi Adopsi & Pelaporan Kucing
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**MeowCare** adalah aplikasi mobile berbasis **React Native** yang dikembangkan sebagai proyek akhir untuk mendukung proses **pelaporan kucing terlantar**, **pengajuan adopsi**, serta **penyebaran artikel edukatif** mengenai hewan peliharaan, khususnya kucing. Aplikasi ini juga menerapkan **role-based access**, di mana beberapa fitur hanya dapat diakses oleh **admin**, sementara pengguna biasa memiliki akses terbatas.
 
-## Get started
+---
 
-1. Install dependencies
+## 🎯 Rumusan Masalah
 
-   ```bash
-   npm install
-   ```
+Beberapa permasalahan yang mendasari pengembangan aplikasi ini antara lain:
 
-2. Start the app
+- Tidak adanya sistem terintegrasi untuk **melaporkan kucing terlantar** kepada pihak yang berwenang.
+- Proses **adopsi kucing** yang masih dilakukan secara manual dan kurang efisien.
+- Keterbatasan informasi dan edukasi terkait perawatan hewan peliharaan, khususnya kucing.
+- Minimnya fitur pembeda antara **akses pengguna biasa** dan **akses admin**, yang menyulitkan pengelolaan data dan informasi.
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## 🎯 Tujuan Pengembangan
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Tujuan utama dari aplikasi **MeowCare** adalah:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Membangun platform digital yang memungkinkan masyarakat untuk **melaporkan kucing terlantar** dengan mudah dan cepat.
+- Menyediakan sistem **pengajuan adopsi kucing** secara online dengan proses yang terdokumentasi.
+- Menyediakan **konten edukatif** dan informasi kegiatan seputar kucing untuk meningkatkan kepedulian dan pemahaman pengguna.
+- Mengimplementasikan **role-based access** untuk memisahkan fitur dan kontrol antara admin dan pengguna biasa.
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## 🧠 Teknologi yang Digunakan
 
-```bash
-npm run reset-project
-```
+| Komponen               | Deskripsi                                                       |
+|------------------------|-----------------------------------------------------------------|
+| `React Native`         | Framework utama untuk membangun aplikasi mobile.                |
+| `Laravel`              | Backend RESTful API dan sistem otentikasi menggunakan Sanctum.  |
+| `MySQL`                | Database relasional untuk menyimpan data pengguna, artikel, dll.|
+| `Express / API`        | Berfungsi sebagai jembatan antara frontend dan database.        |
+| `Expo Router`          | Routing dan navigasi dalam aplikasi mobile.                     |
+| `Axios`                | Untuk pengambilan data dari backend API.                        |
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## 👨‍💻 Tim Pengembang
 
-To learn more about developing your project with Expo, look at the following resources:
+Aplikasi ini dikembangkan oleh:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Mikhail Shams Afzal Karim  
+- Irsyad Fadhil Makarim  
+- Kalfin Syah Kilau Mayya  
+- Albi Akhsanul Hakim  
+- Muhamad Vicky Oktafrian  
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## 📌 Fitur Utama
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- 🐱 **Lapor Kucing Terlantar** – Pengguna dapat melaporkan keberadaan kucing yang membutuhkan pertolongan.
+- 🏡 **Ajukan Adopsi** – Fitur untuk mengajukan adopsi kucing yang tersedia dalam sistem.
+- 📖 **Baca Artikel** – Menyediakan artikel dengan kategori edukasi dan kegiatan.
+- 🔐 **Login & Registrasi** – Otentikasi pengguna berbasis Laravel Sanctum.
+- 🛠️ **Role Admin** – Admin dapat mengelola data kucing, verifikasi pengajuan adopsi, serta mengelola konten artikel.
+- 🧑‍💼 **Profil Pengguna** – Menampilkan informasi akun dan status pengajuan adopsi.
