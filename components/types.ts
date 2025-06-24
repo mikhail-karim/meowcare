@@ -22,4 +22,5 @@ export type Article = {
   image: any;
 };
 
-export const API_BASE_URL = 'http://192.168.100.158:8000';
+// Ganti 192.168.1.6 dengan IP server anda
+export const API_BASE_URL = 'http://192.168.1.6:8000';

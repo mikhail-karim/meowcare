@@ -59,3 +59,19 @@ Aplikasi ini dikembangkan oleh:
 - 🔐 **Login & Registrasi** – Otentikasi pengguna berbasis Laravel Sanctum.
 - 🛠️ **Role Admin** – Admin dapat mengelola data kucing, verifikasi pengajuan adopsi, serta mengelola konten artikel.
 - 🧑‍💼 **Profil Pengguna** – Menampilkan informasi akun dan status pengajuan adopsi.
+
+## Cara Menjalankan Melalui Local Server
+
+- Buka 2 terminal bersamaan, untuk server backend dan untuk server front end
+- Untuk backend, buka folder backend-lumen dengan prompt : cd backend-lumen
+- Jalankan perintah                                      : php -S 0.0.0.0:8000 -t public
+- Buka terminal manapun dan jalankan                     : ipconfig
+- Salin ip dari IPv4 Address milikmu
+- Buka folder meowcare/components, lalu buka file types.ts
+- Salin ip sebelumnya ke dalam API_BASE_URL
+
+- Untuk frontend, buka folder root atau meowcare
+- Install Expo Go di ponsel jika ingin menguji lewat ponsel
+- Jalankan perintah berikut di terminal meowcare        : npx expo start
+- Jika tidak berjalan, install librarynya               : npm install
+- Salin url exp/ scan barcode/ buka local servernya melalui website kamu
