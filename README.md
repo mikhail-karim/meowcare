@@ -43,11 +43,7 @@ Tujuan utama dari aplikasi **MeowCare** adalah:
 
 Aplikasi ini dikembangkan oleh:
 
-- Mikhail Shams Afzal Karim  
-- Irsyad Fadhil Makarim  
-- Kalfin Syah Kilau Mayya  
-- Albi Akhsanul Hakim  
-- Muhamad Vicky Oktafrian  
+
 
 ---
 
