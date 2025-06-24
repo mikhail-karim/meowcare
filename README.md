@@ -43,7 +43,11 @@ Tujuan utama dari aplikasi **MeowCare** adalah:
 
 Aplikasi ini dikembangkan oleh:
 
-
+- Septianto Bagus Hidayatullah
+- Mikhail Shams Afzal Karim
+- Bahiskara Ananda Arryanto
+- Dian Maharani
+- Salsa Pramudhita Agustiardani
 
 ---
 
